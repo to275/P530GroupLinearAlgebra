@@ -1,7 +1,7 @@
 %% Linear Algebra Group Assignment
 % Authors: Tyce Olaveson and Levi Moats 
 % Class: Physics 530 
-% Professor: Dr Trastrum 
+% Professor: Dr Transtrum 
 % Date: 02/26/2024 
 % 
 % Consider the one dimenstional boundary value problem that arises in fluid
