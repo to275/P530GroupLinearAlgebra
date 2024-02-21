@@ -38,11 +38,26 @@
 %
 % where
 %
-% $$A = x$$
+% $$A = A_1 + A_2$$
 % 
-% $$b = x$$
+% $$b = F_i$$
 %
-% $$x = x$$
+% $$x = u(x)$$
+%
+% From above
+%
+% It can be shown that $A_1$ is a symetric tridiagonal matrix with
+% $\frac{2}{\Delta x}$ on the diagonal and $\frac{-1}{\Delta x}$ on the off
+% diagonals. $A_2$ is a skew-symmetric tridiagonal matrix with 0 on the
+% diagonal, $\frac{\gamma}{2}$ on the upper off diagonal, and 
+% $\frac{-\gamma}{2}$ on the lower off diagonal.
+%
+% It can be shown that $F_i$ is a vector is an n by 1 vector where all the
+% values are $\Delta x$.
+%
+% c) A function CalcAandb.m has been written and is included in this
+% repository. It accepts $n$ and $\gamma$ as inputs and returns a sparse A
+% matrix and 
 %% Implement the GMRES algorithm
 %
 %% Solving the FEM problem
