@@ -1,5 +1,5 @@
-function [x,V,H] = mygmres(I,b,x0,n,M,A)
-% function [V,H] = mygmres(I,b,x0,n,M,A)
+function [x,er,V,H] = mygmres(I,b,x0,n,M,A)
+% function [x,er,V,H] = mygmres(I,b,x0,n,M,A)
 % function that runs the GMRES algorithm for the problem Ax = b
 % Inputs: I: number of iterations, x0: initial guess, n is the dimension of
 % the problem, A is an n x n matrix, M is an n x n matrix used to define
@@ -15,7 +15,7 @@ V = zeros([length(x0),n]); % V subspace
 V(:,1) = v1;
 H = zeros([length(x0),n]);
 W = zeros([length(x0),n]);
-for j = 1:n
+for j = 1:I
     W(:,j) = A*V(:,j);
     for i = 1:j
         H(i,j) = W(:,j)'*M*V(:,i);
@@ -33,3 +33,4 @@ e1 = eye(size(H));
 e1 = e1(:,1);
 y = H\(beta*e1);
 x = x0 + V*y;
+er = norm(A*x-b)/n;
