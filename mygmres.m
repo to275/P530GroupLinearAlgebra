@@ -19,11 +19,11 @@ for j = 1:n
     W(:,j) = A*V(:,j);
     for i = 1:j
         H(i,j) = W(:,j)'*M*V(:,i);
-        W(:,j) = W(:,j)-H(i,j)*V(:,j);
+        W(:,j) = W(:,j)-H(i,j)*V(:,i);
     end % i = 1:j
     H(j+1,j) = norm(W(:,j));
-    if H(j+1,j) == 0
-        m=j;
+    if H(j+1,j) <= 1e-8 % close enough to zero
+        disp('break')
         break
     end
     V(:,j+1) = W(:,j)/H(j+1,j);
