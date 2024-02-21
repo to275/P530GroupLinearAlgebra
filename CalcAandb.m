@@ -23,7 +23,5 @@ A1 = A1+eye(n)*2/dx;
 
 A = A1+A2;
 
-% convert to sparse representation
-
 end
 
