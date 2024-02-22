@@ -1,4 +1,5 @@
 function [A,b] = CalcAandb(n,gamma)
+% [A,b] = CalcAandb(n,gamma)
 %This script will calculate the matrix A and b for the GMRES problem
 % Input: n - the number of basis functions, gamma the value of the
 % potential: V(x) = gamma.
@@ -8,7 +9,7 @@ function [A,b] = CalcAandb(n,gamma)
 % NEED TO UPDATE TO CREATE A SPRASE REPRESENTATION
 
 % regular representation
-dx = n+1;
+dx = 1/(n+1);
 A1 = zeros(n);
 A2 = zeros(n);
 b = dx*ones([n,1]);

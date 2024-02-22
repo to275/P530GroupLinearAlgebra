@@ -62,13 +62,59 @@
 % Examples from the text:
 % A = [1 4 7; 2 9 7; 5 8 3];
 % b = [1;8;2]; x = [-2.18; 1.84; -0.6]
-% b = [2;3;9]; x = [-2.18; 1.84; -0.6]
-% b = [5;-3;8]; x = [-2.18; 1.84; -0.6]
+% b = [2;3;9]; x = [-2.1; -0.22; 0.11]
+% b = [5;-3;8]; x = [4.8; -2.6; 1.5]
 A = [1 4 7; 2 9 7; 5 8 3];
-b = [1;8;2]; x = [-2.18; 1.84; -0.6]; x0 = zeros([3,1]); M = eye(3)
-[x,er,V,H] = mygmres(3,b,x0,3,M,A)
+b = [1;8;2]; x = [-2.18; 1.84; -0.6]; x0 = zeros([3,1]); M = eye(3);
+[xfit,er,V,H] = mygmres(3,b,x0,3,M,A);
+disp(round(xfit,2))
+disp(norm(er))
 
+b = [2;3;9]; x = [-2.1; -0.22; 0.11]; x0 = zeros([3,1]); M = eye(3);
+[xfit,er,V,H] = mygmres(3,b,x0,3,M,A);
+disp(round(xfit,2))
+
+b = [5;-3;8]; x = [4.8; -2.6; 1.5]; x0 = zeros([3,1]); M = eye(3);
+[xfit,er,V,H] = mygmres(3,b,x0,3,M,A);
+disp(round(xfit,2))
+disp(' ')
 %% Solving the FEM problem
-%
+% Use your GMRES function to solve the finite-element formulation of the
+% variational problem for the cases $V(x) = 1$ and $V(x) = n+1$ using $M$
+% as the identity matrix. For each case, run with $n=16,32,64,128$ and
+% $l=2,4,8,16,32,64,...,$ increasing $l$ until the error (i.e., the norm of
+% the residual divided by $n$) is below $10^{-6}$. Plot your most accurate
+% solution (as a function of x) as well as teh error versus functions of
+% $n$ and $l$.
+
+% define arrays
+ns = [16,32,64,128]; % number of basis functions to use
+ls = 2.^(1:6); % number of iterations
+
+Vs = {@(n) 1, @(n) n+1}; % set of different (constant) functions for
+
+errors = zeros([length(s),length(ls),length(Vs)]); % empty matrix to store the errors
+solutions = cell(size(errors)); % empty cell array to store the solutions after they have been calculated
+xplot = cell([length(ns),1]);
+for i = 1:length(ns)
+    xplot{i} = 0:1/(ns(i)+1):1;
+end
+
+% loop through each case
+for i = 1:length(Vs)
+    V = Vs{i};
+    for j = 1:length(ns)
+        n = ns(j);
+        for k = 1:length(ls)
+            l = ls(k);
+            % create the input matrices
+            [A,b] = CalcAandb(n,V(n));
+            [x,errors(j,k,i),~,~] = mygmres(l,b,zeros([n,1]),n,eye(n),A);
+            solutions{j,k,i} = [0;x;1];
+        end  % k = 1:length(ls)
+    end % j = 1:length(ns)
+end % i = 1:length(Vs)
+
+
 %% Preconditioning the GMRES
 %
