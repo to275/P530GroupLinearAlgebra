@@ -62,20 +62,12 @@
 % Examples from the text:
 % A = [1 4 7; 2 9 7; 5 8 3];
 % b = [1;8;2]; x = [-2.18; 1.84; -0.6]
-% b = [2;3;9]; x = [-2.1; -0.22; 0.11]
-% b = [5;-3;8]; x = [4.8; -2.6; 1.5]
+% b = [2;3;9]; x = [-2.18; 1.84; -0.6]
+% b = [5;-3;8]; x = [-2.18; 1.84; -0.6]
 A = [1 4 7; 2 9 7; 5 8 3];
-b = [1;8;2]; x = [-2.18; 1.84; -0.6]; x0 = zeros([3,1]); M = eye(3);
-[xfit,er,V,H] = mygmres(3,b,x0,3,M,A);
-disp(norm(xfit-x))
+b = [1;8;2]; x = [-2.18; 1.84; -0.6]; x0 = zeros([3,1]); M = eye(3)
+[x,er,V,H] = mygmres(3,b,x0,3,M,A)
 
-b = [2;3;9]; x = [-2.1; -0.22; 0.11]; x0 = zeros([3,1]); M = eye(3);
-[xfit,er,V,H] = mygmres(3,b,x0,3,M,A);
-disp(norm(xfit-x))
-
-b = [5;-3;8]; x = [4.8; -2.6; 1.5]; x0 = zeros([3,1]); M = eye(3);
-[xfit,er,V,H] = mygmres(3,b,x0,3,M,A);
-disp(norm(xfit-x))
 %% Solving the FEM problem
 %
 %% Preconditioning the GMRES
