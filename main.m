@@ -129,6 +129,7 @@ ylabel("l","FontSize",14)
 xlabel("n","FontSize",14)
 zlabel("Error","FontSize",14)
 view([143.7,25.8])
+zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
 snapnow;
 %%%
 % Produce the plot for $V(x) = n+1$
@@ -143,6 +144,7 @@ ylabel("l","FontSize",14)
 xlabel("n","FontSize",14)
 zlabel("Error","FontSize",14)
 view([143.7,25.8])
+zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
 snapnow;
 %% Preconditioning the GMRES
 %
