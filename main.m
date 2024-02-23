@@ -89,7 +89,7 @@ disp(' ')
 
 % define arrays
 ns = [16,32,64,128]; % number of basis functions to use
-ls = 2.^(1:6); % number of iterations
+ls = 2.^(1:7); % number of iterations
 
 Vs = {@(n) 1, @(n) n+1}; % set of different (constant) functions for
 
@@ -115,6 +115,27 @@ for i = 1:length(Vs)
     end % j = 1:length(ns)
 end % i = 1:length(Vs)
 
+% Produce the plot for $V(x) = 1$
+sq=squeeze(errors(:,:,1));
 
+figure
+[X,Y] = meshgrid(ns,ls);
+surf(X,Y,sq)
+title("V(x) = 1","FontSize",16)
+ylabel("l","FontSize",14)
+xlabel("n","FontSize",14)
+zlabel("Error","FontSize",14)
+view([143.7,25.8])
+
+% Produce the plot for $V(x) = n+1$
+sq=squeeze(errors(:,:,2));
+
+figure
+surf(X,Y,sq)
+title("V(x) = n+1","FontSize",16)
+ylabel("l","FontSize",14)
+xlabel("n","FontSize",14)
+zlabel("Error","FontSize",14)
+view([143.7,25.8])
 %% Preconditioning the GMRES
 %
