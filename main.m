@@ -147,4 +147,12 @@ view([143.7,25.8])
 zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
 snapnow;
 %% Preconditioning the GMRES
+% a) Simple derivation here
+% 
+% b) $\tilde{A}$ and $\tilde{b}$ are easy to calculate be cause they are
+% both derived using $A_1$. $A_1$ is a symetric tridiagonal matrix making it very
+% easy to find the invers reguardless of size using a variety of
+% algorithms. 
+%
+% c) Repeat problem 3 using the preconditioned matrix. 
 %
