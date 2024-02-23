@@ -115,7 +115,7 @@ for i = 1:length(Vs)
     end % j = 1:length(ns)
 end % i = 1:length(Vs)
 
-%%
+%%%
 % Produce the plot for $V(x) = 1$
 sq=squeeze(errors(:,:,1));
 
@@ -129,8 +129,14 @@ ylabel("l","FontSize",14)
 xlabel("n","FontSize",14)
 zlabel("Error","FontSize",14)
 view([143.7,25.8])
-zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
+%zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
 snapnow;
+
+hold on
+Hplane = surf(X,Y,1e-6*ones(size(X)));
+Hplane.EdgeColor = 'none';
+Hplane.FaceAlpha = 0.5;
+
 %%%
 % Produce the plot for $V(x) = n+1$
 sq=squeeze(errors(:,:,2));
@@ -144,7 +150,12 @@ ylabel("l","FontSize",14)
 xlabel("n","FontSize",14)
 zlabel("Error","FontSize",14)
 view([143.7,25.8])
-zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
+%zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
 snapnow;
+
+hold on
+Hplane = surf(X,Y,1e-6*ones(size(X)));
+Hplane.EdgeColor = 'none';
+Hplane.FaceAlpha = 0.5;
 %% Preconditioning the GMRES
 %
