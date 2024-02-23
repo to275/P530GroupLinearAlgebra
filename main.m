@@ -122,6 +122,8 @@ sq=squeeze(errors(:,:,1));
 figure
 [X,Y] = meshgrid(ns,ls);
 surf(X,Y,sq)
+ax=gca;
+ax.ZScale = 'log';
 title("V(x) = 1","FontSize",16)
 ylabel("l","FontSize",14)
 xlabel("n","FontSize",14)
@@ -134,6 +136,8 @@ sq=squeeze(errors(:,:,2));
 
 figure
 surf(X,Y,sq)
+ax=gca;
+ax.ZScale = 'log';
 title("V(x) = n+1","FontSize",16)
 ylabel("l","FontSize",14)
 xlabel("n","FontSize",14)
