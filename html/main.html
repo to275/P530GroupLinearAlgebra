@@ -67,7 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Linear Algebra Group Assignment</h1><!--introduction--><p>Authors: Tyce Olaveson and Levi Moats Class: Physics 530 Professor: Dr Transtrum Date: 02/26/2024</p><p>Consider the one dimenstional boundary value problem that arises in fluid dynamics</p><p><img src="main_eq12625388480741236538.png" alt="$$-u''(x) + V(x)u'(x) = f(x), x\in[0,1]$$" style="width:147px;height:10px;"></p><p>where</p><p><img src="main_eq00165776359285064237.png" alt="$$u(0) = u(1) = 0$$" style="width:63px;height:10px;"></p><p>where we will take <img src="main_eq05692257027104938069.png" alt="$V(x),f(x)$" style="width:41px;height:10px;"> to be constants: <img src="main_eq16630049483923436071.png" alt="$V(x) = \gamma$" style="width:37px;height:10px;"> and <img src="main_eq11476071571782016371.png" alt="$f(x) = 1$" style="width:34px;height:10px;"></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Problem Formulation</a></li><li><a href="#2">Implement the GMRES algorithm</a></li><li><a href="#3">Solving the FEM problem</a></li><li><a href="#4">Preconditioning the GMRES</a></li></ul></div><h2 id="1">Problem Formulation</h2><p>a) Using a test function <img src="main_eq16179117359969153947.png" alt="$\phi$" style="width:6px;height:9px;">, the above boundary value problem can be rewritten in the weak form as the following:</p><p><img src="main_eq00182307570955008526.png" alt="$$A_1[\phi,u] + A_2[\phi,u] = F[\phi]$$" style="width:101px;height:10px;"></p><p>where</p><p><img src="main_eq12445790906574176086.png" alt="$$A_1[\phi,u] = \int_{0}^{1} \phi' \cdot u' dx$$" style="width:89px;height:23px;"></p><p><img src="main_eq08403486759626861935.png" alt="$$A_2[\phi,u] = \int_{0}^{1} v(x) \cdot u' \cdot \phi dx$$" style="width:110px;height:23px;"></p><p><img src="main_eq05804388856437582391.png" alt="$$F[\phi] = \int_{0}^{1} f \cdot \phi dx$$" style="width:72px;height:23px;"></p><p>b) The "hat" functions from class, <img src="main_eq12501197733264304350.png" alt="$\phi_i$" style="width:8px;height:9px;">, can be used to aproximate <img src="main_eq15012583454694319273.png" alt="$u$" style="width:5px;height:5px;"> using linear combinations: <img src="main_eq04666691619410396832.png" alt="$u(x) = \sum_{i} u_i \phi_i(x)$" style="width:71px;height:10px;">. This allows the weak form of the boundary value problem to be written in the form:</p><p><img src="main_eq00762848181973046606.png" alt="$$Ax = b$$" style="width:29px;height:7px;"></p><p>where</p><p><img src="main_eq10112883816714014336.png" alt="$$A = A_1 + A_2$$" style="width:61px;height:10px;"></p><p><img src="main_eq08613210504128538471.png" alt="$$b = F_i$$" style="width:29px;height:10px;"></p><p><img src="main_eq04239403822805000688.png" alt="$$x = u(x)$$" style="width:41px;height:11px;"></p><p>From above</p><p>It can be shown that <img src="main_eq11851299345599123836.png" alt="$A_1$" style="width:12px;height:10px;"> is a symetric tridiagonal matrix with <img src="main_eq07622452428426434772.png" alt="$\frac{2}{\Delta x}$" style="width:11px;height:14px;"> on the diagonal and <img src="main_eq05952722044691464124.png" alt="$\frac{-1}{\Delta x}$" style="width:11px;height:14px;"> on the off diagonals. <img src="main_eq16868478922075211937.png" alt="$A_2$" style="width:12px;height:10px;"> is a skew-symmetric tridiagonal matrix with 0 on the diagonal, <img src="main_eq15440564927394894381.png" alt="$\frac{\gamma}{2}$" style="width:5px;height:13px;"> on the upper off diagonal, and <img src="main_eq10172575927492301439.png" alt="$\frac{-\gamma}{2}$" style="width:11px;height:13px;"> on the lower off diagonal.</p><p>It can be shown that <img src="main_eq09376488099935068611.png" alt="$F_i$" style="width:10px;height:10px;"> is a vector is an n by 1 vector where all the values are <img src="main_eq10158981538422097367.png" alt="$\Delta x$" style="width:15px;height:9px;">.</p><p>c) A function CalcAandb.m has been written and is included in this repository. It accepts <img src="main_eq17555110721583917243.png" alt="$n$" style="width:7px;height:6px;"> and <img src="main_eq17508378523367818359.png" alt="$\gamma$" style="width:6px;height:8px;"> as inputs and returns a sparse A matrix and</p><h2 id="2">Implement the GMRES algorithm</h2><p>Examples from the text: A = [1 4 7; 2 9 7; 5 8 3]; b = [1;8;2]; x = [-2.18; 1.84; -0.6] b = [2;3;9]; x = [-2.1; -0.22; 0.11] b = [5;-3;8]; x = [4.8; -2.6; 1.5]</p><pre class="codeinput">A = [1 4 7; 2 9 7; 5 8 3];
+  </style></head><body><div class="content"><h1>Linear Algebra Group Assignment</h1><!--introduction--><p>Authors: Tyce Olaveson and Levi Moats Class: Physics 530 Professor: Dr Transtrum Date: 02/26/2024</p><p>Consider the one dimenstional boundary value problem that arises in fluid dynamics</p><p><img src="main_eq12625388480741236538.png" alt="$$-u''(x) + V(x)u'(x) = f(x), x\in[0,1]$$" style="width:147px;height:10px;"></p><p>where</p><p><img src="main_eq00165776359285064237.png" alt="$$u(0) = u(1) = 0$$" style="width:63px;height:10px;"></p><p>where we will take <img src="main_eq05692257027104938069.png" alt="$V(x),f(x)$" style="width:41px;height:10px;"> to be constants: <img src="main_eq16630049483923436071.png" alt="$V(x) = \gamma$" style="width:37px;height:10px;"> and <img src="main_eq11476071571782016371.png" alt="$f(x) = 1$" style="width:34px;height:10px;"></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Problem Formulation</a></li><li><a href="#2">Implement the GMRES algorithm</a></li><li><a href="#3">Solving the FEM problem</a></li><li><a href="#6">Preconditioning the GMRES</a></li></ul></div><h2 id="1">Problem Formulation</h2><p>a) Using a test function <img src="main_eq16179117359969153947.png" alt="$\phi$" style="width:6px;height:9px;">, the above boundary value problem can be rewritten in the weak form as the following:</p><p><img src="main_eq00182307570955008526.png" alt="$$A_1[\phi,u] + A_2[\phi,u] = F[\phi]$$" style="width:101px;height:10px;"></p><p>where</p><p><img src="main_eq12445790906574176086.png" alt="$$A_1[\phi,u] = \int_{0}^{1} \phi' \cdot u' dx$$" style="width:89px;height:23px;"></p><p><img src="main_eq08403486759626861935.png" alt="$$A_2[\phi,u] = \int_{0}^{1} v(x) \cdot u' \cdot \phi dx$$" style="width:110px;height:23px;"></p><p><img src="main_eq05804388856437582391.png" alt="$$F[\phi] = \int_{0}^{1} f \cdot \phi dx$$" style="width:72px;height:23px;"></p><p>b) The "hat" functions from class, <img src="main_eq12501197733264304350.png" alt="$\phi_i$" style="width:8px;height:9px;">, can be used to aproximate <img src="main_eq15012583454694319273.png" alt="$u$" style="width:5px;height:5px;"> using linear combinations: <img src="main_eq04666691619410396832.png" alt="$u(x) = \sum_{i} u_i \phi_i(x)$" style="width:71px;height:10px;">. This allows the weak form of the boundary value problem to be written in the form:</p><p><img src="main_eq00762848181973046606.png" alt="$$Ax = b$$" style="width:29px;height:7px;"></p><p>where</p><p><img src="main_eq10112883816714014336.png" alt="$$A = A_1 + A_2$$" style="width:61px;height:10px;"></p><p><img src="main_eq08613210504128538471.png" alt="$$b = F_i$$" style="width:29px;height:10px;"></p><p><img src="main_eq04239403822805000688.png" alt="$$x = u(x)$$" style="width:41px;height:11px;"></p><p>From above</p><p>It can be shown that <img src="main_eq11851299345599123836.png" alt="$A_1$" style="width:12px;height:10px;"> is a symetric tridiagonal matrix with <img src="main_eq07622452428426434772.png" alt="$\frac{2}{\Delta x}$" style="width:11px;height:14px;"> on the diagonal and <img src="main_eq05952722044691464124.png" alt="$\frac{-1}{\Delta x}$" style="width:11px;height:14px;"> on the off diagonals. <img src="main_eq16868478922075211937.png" alt="$A_2$" style="width:12px;height:10px;"> is a skew-symmetric tridiagonal matrix with 0 on the diagonal, <img src="main_eq15440564927394894381.png" alt="$\frac{\gamma}{2}$" style="width:5px;height:13px;"> on the upper off diagonal, and <img src="main_eq10172575927492301439.png" alt="$\frac{-\gamma}{2}$" style="width:11px;height:13px;"> on the lower off diagonal.</p><p>It can be shown that <img src="main_eq09376488099935068611.png" alt="$F_i$" style="width:10px;height:10px;"> is a vector is an n by 1 vector where all the values are <img src="main_eq10158981538422097367.png" alt="$\Delta x$" style="width:15px;height:9px;">.</p><p>c) A function CalcAandb.m has been written and is included in this repository. It accepts <img src="main_eq17555110721583917243.png" alt="$n$" style="width:7px;height:6px;"> and <img src="main_eq17508378523367818359.png" alt="$\gamma$" style="width:6px;height:8px;"> as inputs and returns a sparse A matrix and</p><h2 id="2">Implement the GMRES algorithm</h2><p>Examples from the text: A = [1 4 7; 2 9 7; 5 8 3]; b = [1;8;2]; x = [-2.18; 1.84; -0.6] b = [2;3;9]; x = [-2.1; -0.22; 0.11] b = [5;-3;8]; x = [4.8; -2.6; 1.5]</p><pre class="codeinput">A = [1 4 7; 2 9 7; 5 8 3];
 b = [1;8;2]; x = [-2.18; 1.84; -0.6]; x0 = zeros([3,1]); M = eye(3);
 [xfit,er,V,H] = mygmres(3,b,x0,3,M,A);
 disp(round(xfit,2))
@@ -101,7 +101,7 @@ break
  
 </pre><h2 id="3">Solving the FEM problem</h2><p>Use your GMRES function to solve the finite-element formulation of the variational problem for the cases <img src="main_eq09748024660719818071.png" alt="$V(x) = 1$" style="width:43px;height:11px;"> and <img src="main_eq17408539410532043687.png" alt="$V(x) = n+1$" style="width:63px;height:11px;"> using <img src="main_eq09319732146067371049.png" alt="$M$" style="width:12px;height:8px;"> as the identity matrix. For each case, run with <img src="main_eq09942781562123861180.png" alt="$n=16,32,64,128$" style="width:85px;height:10px;"> and <img src="main_eq14942248550456811781.png" alt="$l=2,4,8,16,32,64,...,$" style="width:108px;height:10px;"> increasing <img src="main_eq17216086743898025322.png" alt="$l$" style="width:3px;height:8px;"> until the error (i.e., the norm of the residual divided by <img src="main_eq17555110721583917243.png" alt="$n$" style="width:7px;height:6px;">) is below <img src="main_eq13935977806850155989.png" alt="$10^{-6}$" style="width:20px;height:10px;">. Plot your most accurate solution (as a function of x) as well as teh error versus functions of <img src="main_eq17555110721583917243.png" alt="$n$" style="width:7px;height:6px;"> and <img src="main_eq17216086743898025322.png" alt="$l$" style="width:3px;height:8px;">.</p><pre class="codeinput"><span class="comment">% define arrays</span>
 ns = [16,32,64,128]; <span class="comment">% number of basis functions to use</span>
-ls = 2.^(1:6); <span class="comment">% number of iterations</span>
+ls = 2.^(1:7); <span class="comment">% number of iterations</span>
 
 Vs = {@(n) 1, @(n) n+1}; <span class="comment">% set of different (constant) functions for</span>
 
@@ -126,6 +126,27 @@ xplot = cell([length(ns),1]);
         <span class="keyword">end</span>  <span class="comment">% k = 1:length(ls)</span>
     <span class="keyword">end</span> <span class="comment">% j = 1:length(ns)</span>
 <span class="keyword">end</span> <span class="comment">% i = 1:length(Vs)</span>
+</pre><p>Produce the plot for <img src="main_eq09748024660719818071.png" alt="$V(x) = 1$" style="width:43px;height:11px;"></p><pre class="codeinput">sq=squeeze(errors(:,:,1));
+
+figure
+[X,Y] = meshgrid(ns,ls);
+surf(X,Y,sq)
+title(<span class="string">"V(x) = 1"</span>,<span class="string">"FontSize"</span>,16)
+ylabel(<span class="string">"l"</span>,<span class="string">"FontSize"</span>,14)
+xlabel(<span class="string">"n"</span>,<span class="string">"FontSize"</span>,14)
+zlabel(<span class="string">"Error"</span>,<span class="string">"FontSize"</span>,14)
+view([143.7,25.8])
+snapnow;
+</pre><p>Produce the plot for <img src="main_eq17408539410532043687.png" alt="$V(x) = n+1$" style="width:63px;height:11px;"></p><pre class="codeinput">sq=squeeze(errors(:,:,2));
+
+figure
+surf(X,Y,sq)
+title(<span class="string">"V(x) = n+1"</span>,<span class="string">"FontSize"</span>,16)
+ylabel(<span class="string">"l"</span>,<span class="string">"FontSize"</span>,14)
+xlabel(<span class="string">"n"</span>,<span class="string">"FontSize"</span>,14)
+zlabel(<span class="string">"Error"</span>,<span class="string">"FontSize"</span>,14)
+view([143.7,25.8])
+snapnow;
 </pre><pre class="codeoutput">break
 break
 break
@@ -138,7 +159,14 @@ break
 break
 break
 break
-</pre><h2 id="4">Preconditioning the GMRES</h2><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022b</a><br></p></div><!--
+break
+break
+break
+break
+break
+break
+break
+</pre><img vspace="5" hspace="5" src="main_01.png" alt=""> <img vspace="5" hspace="5" src="main_02.png" alt=""> <h2 id="6">Preconditioning the GMRES</h2><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Linear Algebra Group Assignment
 % Authors: Tyce Olaveson and Levi Moats 
@@ -231,7 +259,7 @@ disp(' ')
 
 % define arrays
 ns = [16,32,64,128]; % number of basis functions to use
-ls = 2.^(1:6); % number of iterations
+ls = 2.^(1:7); % number of iterations
 
 Vs = {@(n) 1, @(n) n+1}; % set of different (constant) functions for
 
@@ -257,7 +285,31 @@ for i = 1:length(Vs)
     end % j = 1:length(ns)
 end % i = 1:length(Vs)
 
+%%%
+% Produce the plot for $V(x) = 1$
+sq=squeeze(errors(:,:,1));
 
+figure
+[X,Y] = meshgrid(ns,ls);
+surf(X,Y,sq)
+title("V(x) = 1","FontSize",16)
+ylabel("l","FontSize",14)
+xlabel("n","FontSize",14)
+zlabel("Error","FontSize",14)
+view([143.7,25.8])
+snapnow;
+%%%
+% Produce the plot for $V(x) = n+1$
+sq=squeeze(errors(:,:,2));
+
+figure
+surf(X,Y,sq)
+title("V(x) = n+1","FontSize",16)
+ylabel("l","FontSize",14)
+xlabel("n","FontSize",14)
+zlabel("Error","FontSize",14)
+view([143.7,25.8])
+snapnow;
 %% Preconditioning the GMRES
 %
 ##### SOURCE END #####

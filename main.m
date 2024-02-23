@@ -115,5 +115,36 @@ for i = 1:length(Vs)
     end % j = 1:length(ns)
 end % i = 1:length(Vs)
 
+%%
+% Produce the plot for $V(x) = 1$
+sq=squeeze(errors(:,:,1));
+
+figure
+[X,Y] = meshgrid(ns,ls);
+surf(X,Y,sq)
+ax=gca;
+ax.ZScale = 'log';
+title("V(x) = 1","FontSize",16)
+ylabel("l","FontSize",14)
+xlabel("n","FontSize",14)
+zlabel("Error","FontSize",14)
+view([143.7,25.8])
+zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
+snapnow;
+%%%
+% Produce the plot for $V(x) = n+1$
+sq=squeeze(errors(:,:,2));
+
+figure
+surf(X,Y,sq)
+ax=gca;
+ax.ZScale = 'log';
+title("V(x) = n+1","FontSize",16)
+ylabel("l","FontSize",14)
+xlabel("n","FontSize",14)
+zlabel("Error","FontSize",14)
+view([143.7,25.8])
+zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
+snapnow;
 %% Preconditioning the GMRES
 %
