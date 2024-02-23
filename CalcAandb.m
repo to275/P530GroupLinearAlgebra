@@ -1,4 +1,4 @@
-function [A,b] = CalcAandb(n,gamma)
+function [A,b,A1] = CalcAandb(n,gamma)
 % [A,b] = CalcAandb(n,gamma)
 %This script will calculate the matrix A and b for the GMRES problem
 % Input: n - the number of basis functions, gamma the value of the
