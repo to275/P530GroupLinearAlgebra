@@ -156,3 +156,25 @@ snapnow;
 %
 % c) Repeat problem 3 using the preconditioned matrix. 
 %
+
+errorsPrecond = zeros([length(ls),length(ns),length(Vs)]); % empty matrix to store the errors
+solutionsPrecond = cell(size(errorsPrecond)); % empty cell array to store the solutions after they have been calculated
+xplotPrecond = cell([length(ns),1]);
+for i = 1:length(ns)
+    xplotPrecond{i} = 0:1/(ns(i)+1):1;
+end
+
+% loop through each case
+for i = 1:length(Vs)
+    V = Vs{i};
+    for j = 1:length(ns)
+        n = ns(j);
+        for k = 1:length(ls)
+            l = ls(k);
+            % create the input matrices
+            [A,b,A1] = CalcAandb(n,V(n)); % This time get 
+            [x,errorsPrecond(k,j,i),~,~] = mygmres(l,b,zeros([n,1]),n,eye(n),A);
+            solutionsPrecond{k,j,i} = [0;x;0];
+        end  % k = 1:length(ls)
+    end % j = 1:length(ns)
+end % i = 1:length(Vs)
