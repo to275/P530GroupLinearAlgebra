@@ -115,6 +115,7 @@ for i = 1:length(Vs)
     end % j = 1:length(ns)
 end % i = 1:length(Vs)
 
+%%%
 % Produce the plot for $V(x) = 1$
 sq=squeeze(errors(:,:,1));
 
@@ -126,7 +127,8 @@ ylabel("l","FontSize",14)
 xlabel("n","FontSize",14)
 zlabel("Error","FontSize",14)
 view([143.7,25.8])
-
+snapnow;
+%%%
 % Produce the plot for $V(x) = n+1$
 sq=squeeze(errors(:,:,2));
 
@@ -137,5 +139,6 @@ ylabel("l","FontSize",14)
 xlabel("n","FontSize",14)
 zlabel("Error","FontSize",14)
 view([143.7,25.8])
+snapnow;
 %% Preconditioning the GMRES
 %
