@@ -115,7 +115,7 @@ for i = 1:length(Vs)
     end % j = 1:length(ns)
 end % i = 1:length(Vs)
 
-%%%
+%%
 % Produce the plot for $V(x) = 1$
 sq=squeeze(errors(:,:,1));
 
