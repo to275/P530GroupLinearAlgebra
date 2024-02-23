@@ -89,7 +89,7 @@ disp(' ')
 
 % define arrays
 ns = [16,32,64,128]; % number of basis functions to use
-ls = 2.^(1:6); % number of iterations
+ls = 2.^(1:7); % number of iterations
 
 Vs = {@(n) 1, @(n) n+1}; % set of different (constant) functions for
 
@@ -114,7 +114,6 @@ for i = 1:length(Vs)
         end  % k = 1:length(ls)
     end % j = 1:length(ns)
 end % i = 1:length(Vs)
-
 
 %% Preconditioning the GMRES
 %
