@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Linear Algebra Group Assignment</title><meta name="generator" content="MATLAB 9.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2024-02-23"><meta name="DC.source" content="main.m"><style type="text/css">
+      --><title>Linear Algebra Group Assignment</title><meta name="generator" content="MATLAB 9.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2024-02-26"><meta name="DC.source" content="main.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,7 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Linear Algebra Group Assignment</h1><!--introduction--><p>Authors: Tyce Olaveson and Levi Moats Class: Physics 530 Professor: Dr Transtrum Date: 02/26/2024</p><p>Consider the one dimenstional boundary value problem that arises in fluid dynamics</p><p><img src="main_eq12625388480741236538.png" alt="$$-u''(x) + V(x)u'(x) = f(x), x\in[0,1]$$" style="width:147px;height:10px;"></p><p>where</p><p><img src="main_eq00165776359285064237.png" alt="$$u(0) = u(1) = 0$$" style="width:63px;height:10px;"></p><p>where we will take <img src="main_eq05692257027104938069.png" alt="$V(x),f(x)$" style="width:41px;height:10px;"> to be constants: <img src="main_eq16630049483923436071.png" alt="$V(x) = \gamma$" style="width:37px;height:10px;"> and <img src="main_eq11476071571782016371.png" alt="$f(x) = 1$" style="width:34px;height:10px;"></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Problem Formulation</a></li><li><a href="#2">Implement the GMRES algorithm</a></li><li><a href="#3">Solving the FEM problem</a></li><li><a href="#6">Preconditioning the GMRES</a></li></ul></div><h2 id="1">Problem Formulation</h2><p>a) Using a test function <img src="main_eq16179117359969153947.png" alt="$\phi$" style="width:6px;height:9px;">, the above boundary value problem can be rewritten in the weak form as the following:</p><p><img src="main_eq00182307570955008526.png" alt="$$A_1[\phi,u] + A_2[\phi,u] = F[\phi]$$" style="width:101px;height:10px;"></p><p>where</p><p><img src="main_eq12445790906574176086.png" alt="$$A_1[\phi,u] = \int_{0}^{1} \phi' \cdot u' dx$$" style="width:89px;height:23px;"></p><p><img src="main_eq08403486759626861935.png" alt="$$A_2[\phi,u] = \int_{0}^{1} v(x) \cdot u' \cdot \phi dx$$" style="width:110px;height:23px;"></p><p><img src="main_eq05804388856437582391.png" alt="$$F[\phi] = \int_{0}^{1} f \cdot \phi dx$$" style="width:72px;height:23px;"></p><p>b) The "hat" functions from class, <img src="main_eq12501197733264304350.png" alt="$\phi_i$" style="width:8px;height:9px;">, can be used to aproximate <img src="main_eq15012583454694319273.png" alt="$u$" style="width:5px;height:5px;"> using linear combinations: <img src="main_eq04666691619410396832.png" alt="$u(x) = \sum_{i} u_i \phi_i(x)$" style="width:71px;height:10px;">. This allows the weak form of the boundary value problem to be written in the form:</p><p><img src="main_eq00762848181973046606.png" alt="$$Ax = b$$" style="width:29px;height:7px;"></p><p>where</p><p><img src="main_eq10112883816714014336.png" alt="$$A = A_1 + A_2$$" style="width:61px;height:10px;"></p><p><img src="main_eq08613210504128538471.png" alt="$$b = F_i$$" style="width:29px;height:10px;"></p><p><img src="main_eq04239403822805000688.png" alt="$$x = u(x)$$" style="width:41px;height:11px;"></p><p>From above</p><p>It can be shown that <img src="main_eq11851299345599123836.png" alt="$A_1$" style="width:12px;height:10px;"> is a symetric tridiagonal matrix with <img src="main_eq07622452428426434772.png" alt="$\frac{2}{\Delta x}$" style="width:11px;height:14px;"> on the diagonal and <img src="main_eq05952722044691464124.png" alt="$\frac{-1}{\Delta x}$" style="width:11px;height:14px;"> on the off diagonals. <img src="main_eq16868478922075211937.png" alt="$A_2$" style="width:12px;height:10px;"> is a skew-symmetric tridiagonal matrix with 0 on the diagonal, <img src="main_eq15440564927394894381.png" alt="$\frac{\gamma}{2}$" style="width:5px;height:13px;"> on the upper off diagonal, and <img src="main_eq10172575927492301439.png" alt="$\frac{-\gamma}{2}$" style="width:11px;height:13px;"> on the lower off diagonal.</p><p>It can be shown that <img src="main_eq09376488099935068611.png" alt="$F_i$" style="width:10px;height:10px;"> is a vector is an n by 1 vector where all the values are <img src="main_eq10158981538422097367.png" alt="$\Delta x$" style="width:15px;height:9px;">.</p><p>c) A function CalcAandb.m has been written and is included in this repository. It accepts <img src="main_eq17555110721583917243.png" alt="$n$" style="width:7px;height:6px;"> and <img src="main_eq17508378523367818359.png" alt="$\gamma$" style="width:6px;height:8px;"> as inputs and returns a sparse A matrix and</p><h2 id="2">Implement the GMRES algorithm</h2><p>Examples from the text: A = [1 4 7; 2 9 7; 5 8 3]; b = [1;8;2]; x = [-2.18; 1.84; -0.6] b = [2;3;9]; x = [-2.1; -0.22; 0.11] b = [5;-3;8]; x = [4.8; -2.6; 1.5]</p><pre class="codeinput">A = [1 4 7; 2 9 7; 5 8 3];
+  </style></head><body><div class="content"><h1>Linear Algebra Group Assignment</h1><!--introduction--><p>Authors: Tyce Olaveson and Levi Moats Class: Physics 530 Professor: Dr Transtrum Date: 02/26/2024</p><p>Consider the one dimenstional boundary value problem that arises in fluid dynamics</p><p><img src="main_eq12625388480741236538.png" alt="$$-u''(x) + V(x)u'(x) = f(x), x\in[0,1]$$"></p><p>where</p><p><img src="main_eq00165776359285064237.png" alt="$$u(0) = u(1) = 0$$"></p><p>where we will take <img src="main_eq05692257027104938069.png" alt="$V(x),f(x)$"> to be constants: <img src="main_eq16630049483923436071.png" alt="$V(x) = \gamma$"> and <img src="main_eq11476071571782016371.png" alt="$f(x) = 1$"></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Problem Formulation</a></li><li><a href="#2">Implement the GMRES algorithm</a></li><li><a href="#3">Solving the FEM problem</a></li><li><a href="#6">Preconditioning the GMRES</a></li></ul></div><h2 id="1">Problem Formulation</h2><p>a) Using a test function <img src="main_eq16179117359969153947.png" alt="$\phi$">, the above boundary value problem can be rewritten in the weak form as the following:</p><p><img src="main_eq00182307570955008526.png" alt="$$A_1[\phi,u] + A_2[\phi,u] = F[\phi]$$"></p><p>where</p><p><img src="main_eq12445790906574176086.png" alt="$$A_1[\phi,u] = \int_{0}^{1} \phi' \cdot u' dx$$"></p><p><img src="main_eq08403486759626861935.png" alt="$$A_2[\phi,u] = \int_{0}^{1} v(x) \cdot u' \cdot \phi dx$$"></p><p><img src="main_eq05804388856437582391.png" alt="$$F[\phi] = \int_{0}^{1} f \cdot \phi dx$$"></p><p>b) The "hat" functions from class, <img src="main_eq12501197733264304350.png" alt="$\phi_i$">, can be used to aproximate <img src="main_eq15012583454694319273.png" alt="$u$"> using linear combinations: <img src="main_eq04666691619410396832.png" alt="$u(x) = \sum_{i} u_i \phi_i(x)$">. This allows the weak form of the boundary value problem to be written in the form:</p><p><img src="main_eq00762848181973046606.png" alt="$$Ax = b$$"></p><p>where</p><p><img src="main_eq10112883816714014336.png" alt="$$A = A_1 + A_2$$"></p><p><img src="main_eq08613210504128538471.png" alt="$$b = F_i$$"></p><p><img src="main_eq04239403822805000688.png" alt="$$x = u(x)$$"></p><p>From above</p><p>It can be shown that <img src="main_eq11851299345599123836.png" alt="$A_1$"> is a symetric tridiagonal matrix with <img src="main_eq07622452428426434772.png" alt="$\frac{2}{\Delta x}$"> on the diagonal and <img src="main_eq05952722044691464124.png" alt="$\frac{-1}{\Delta x}$"> on the off diagonals. <img src="main_eq16868478922075211937.png" alt="$A_2$"> is a skew-symmetric tridiagonal matrix with 0 on the diagonal, <img src="main_eq15440564927394894381.png" alt="$\frac{\gamma}{2}$"> on the upper off diagonal, and <img src="main_eq10172575927492301439.png" alt="$\frac{-\gamma}{2}$"> on the lower off diagonal.</p><p>It can be shown that <img src="main_eq09376488099935068611.png" alt="$F_i$"> is a vector is an n by 1 vector where all the values are <img src="main_eq10158981538422097367.png" alt="$\Delta x$">.</p><p>c) A function CalcAandb.m has been written and is included in this repository. It accepts <img src="main_eq17555110721583917243.png" alt="$n$"> and <img src="main_eq17508378523367818359.png" alt="$\gamma$"> as inputs and returns a sparse A matrix and</p><h2 id="2">Implement the GMRES algorithm</h2><p>Examples from the text: A = [1 4 7; 2 9 7; 5 8 3]; b = [1;8;2]; x = [-2.18; 1.84; -0.6] b = [2;3;9]; x = [-2.1; -0.22; 0.11] b = [5;-3;8]; x = [4.8; -2.6; 1.5]</p><pre class="codeinput">A = [1 4 7; 2 9 7; 5 8 3];
 b = [1;8;2]; x = [-2.18; 1.84; -0.6]; x0 = zeros([3,1]); M = eye(3);
 [xfit,er,V,H] = mygmres(3,b,x0,3,M,A);
 disp(round(xfit,2))
@@ -82,24 +82,20 @@ b = [5;-3;8]; x = [4.8; -2.6; 1.5]; x0 = zeros([3,1]); M = eye(3);
 disp(round(xfit,2))
 disp(<span class="string">' '</span>)
 </pre><pre class="codeoutput">break
-   -2.1800
-    1.8400
-   -0.5900
-
-   1.2583e-15
-
+  -2.180000000000000
+   1.840000000000000
+  -0.590000000000000
+     1.258252761241844e-15
 break
-    2.0800
-   -0.2200
-    0.1100
-
+   2.080000000000000
+  -0.220000000000000
+   0.110000000000000
 break
-    4.8000
-   -2.5600
-    1.4900
-
+   4.800000000000000
+  -2.560000000000000
+   1.490000000000000
  
-</pre><h2 id="3">Solving the FEM problem</h2><p>Use your GMRES function to solve the finite-element formulation of the variational problem for the cases <img src="main_eq09748024660719818071.png" alt="$V(x) = 1$" style="width:43px;height:11px;"> and <img src="main_eq17408539410532043687.png" alt="$V(x) = n+1$" style="width:63px;height:11px;"> using <img src="main_eq09319732146067371049.png" alt="$M$" style="width:12px;height:8px;"> as the identity matrix. For each case, run with <img src="main_eq09942781562123861180.png" alt="$n=16,32,64,128$" style="width:85px;height:10px;"> and <img src="main_eq14942248550456811781.png" alt="$l=2,4,8,16,32,64,...,$" style="width:108px;height:10px;"> increasing <img src="main_eq17216086743898025322.png" alt="$l$" style="width:3px;height:8px;"> until the error (i.e., the norm of the residual divided by <img src="main_eq17555110721583917243.png" alt="$n$" style="width:7px;height:6px;">) is below <img src="main_eq13935977806850155989.png" alt="$10^{-6}$" style="width:20px;height:10px;">. Plot your most accurate solution (as a function of x) as well as teh error versus functions of <img src="main_eq17555110721583917243.png" alt="$n$" style="width:7px;height:6px;"> and <img src="main_eq17216086743898025322.png" alt="$l$" style="width:3px;height:8px;">.</p><pre class="codeinput"><span class="comment">% define arrays</span>
+</pre><h2 id="3">Solving the FEM problem</h2><p>Use your GMRES function to solve the finite-element formulation of the variational problem for the cases <img src="main_eq09748024660719818071.png" alt="$V(x) = 1$"> and <img src="main_eq17408539410532043687.png" alt="$V(x) = n+1$"> using <img src="main_eq09319732146067371049.png" alt="$M$"> as the identity matrix. For each case, run with <img src="main_eq09942781562123861180.png" alt="$n=16,32,64,128$"> and <img src="main_eq14942248550456811781.png" alt="$l=2,4,8,16,32,64,...,$"> increasing <img src="main_eq17216086743898025322.png" alt="$l$"> until the error (i.e., the norm of the residual divided by <img src="main_eq17555110721583917243.png" alt="$n$">) is below <img src="main_eq13935977806850155989.png" alt="$10^{-6}$">. Plot your most accurate solution (as a function of x) as well as teh error versus functions of <img src="main_eq17555110721583917243.png" alt="$n$"> and <img src="main_eq17216086743898025322.png" alt="$l$">.</p><pre class="codeinput"><span class="comment">% define arrays</span>
 ns = [16,32,64,128]; <span class="comment">% number of basis functions to use</span>
 ls = 2.^(1:7); <span class="comment">% number of iterations</span>
 
@@ -126,27 +122,63 @@ xplot = cell([length(ns),1]);
         <span class="keyword">end</span>  <span class="comment">% k = 1:length(ls)</span>
     <span class="keyword">end</span> <span class="comment">% j = 1:length(ns)</span>
 <span class="keyword">end</span> <span class="comment">% i = 1:length(Vs)</span>
-</pre><p>Produce the plot for <img src="main_eq09748024660719818071.png" alt="$V(x) = 1$" style="width:43px;height:11px;"></p><pre class="codeinput">sq=squeeze(errors(:,:,1));
+</pre><p>Produce the plot for <img src="main_eq09748024660719818071.png" alt="$V(x) = 1$"></p><pre class="codeinput">sq=squeeze(errors(:,:,1));
 
 figure
 [X,Y] = meshgrid(ns,ls);
 surf(X,Y,sq)
+ax=gca;
+ax.ZScale = <span class="string">'log'</span>;
 title(<span class="string">"V(x) = 1"</span>,<span class="string">"FontSize"</span>,16)
 ylabel(<span class="string">"l"</span>,<span class="string">"FontSize"</span>,14)
 xlabel(<span class="string">"n"</span>,<span class="string">"FontSize"</span>,14)
 zlabel(<span class="string">"Error"</span>,<span class="string">"FontSize"</span>,14)
 view([143.7,25.8])
+<span class="comment">%zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])</span>
 snapnow;
-</pre><p>Produce the plot for <img src="main_eq17408539410532043687.png" alt="$V(x) = n+1$" style="width:63px;height:11px;"></p><pre class="codeinput">sq=squeeze(errors(:,:,2));
+
+hold <span class="string">on</span>
+Hplane = surf(X,Y,1e-6*ones(size(X)));
+Hplane.EdgeColor = <span class="string">'none'</span>;
+Hplane.FaceAlpha = 0.5;
+
+figure()
+<span class="keyword">for</span> i = 1:length(ns)
+    plot(xplot{i},solutions{7,i,1},<span class="string">'.-'</span>)
+    hold <span class="string">on</span>
+<span class="keyword">end</span>
+legend(string(ns))
+hold <span class="string">off</span>
+xlabel(<span class="string">'x'</span>)
+ylabel(<span class="string">'u'</span>)
+</pre><p>Produce the plot for <img src="main_eq17408539410532043687.png" alt="$V(x) = n+1$"></p><pre class="codeinput">sq=squeeze(errors(:,:,2));
 
 figure
 surf(X,Y,sq)
+ax=gca;
+ax.ZScale = <span class="string">'log'</span>;
 title(<span class="string">"V(x) = n+1"</span>,<span class="string">"FontSize"</span>,16)
 ylabel(<span class="string">"l"</span>,<span class="string">"FontSize"</span>,14)
 xlabel(<span class="string">"n"</span>,<span class="string">"FontSize"</span>,14)
 zlabel(<span class="string">"Error"</span>,<span class="string">"FontSize"</span>,14)
 view([143.7,25.8])
+<span class="comment">%zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])</span>
 snapnow;
+
+hold <span class="string">on</span>
+Hplane = surf(X,Y,1e-6*ones(size(X)));
+Hplane.EdgeColor = <span class="string">'none'</span>;
+Hplane.FaceAlpha = 0.5;
+
+figure()
+<span class="keyword">for</span> i = 1:length(ns)
+    plot(xplot{i},solutions{7,i,2},<span class="string">'.-'</span>)
+    hold <span class="string">on</span>
+<span class="keyword">end</span>
+legend(string(ns))
+hold <span class="string">off</span>
+xlabel(<span class="string">'x'</span>)
+ylabel(<span class="string">'u'</span>)
 </pre><pre class="codeoutput">break
 break
 break
@@ -166,7 +198,107 @@ break
 break
 break
 break
-</pre><img vspace="5" hspace="5" src="main_01.png" alt=""> <img vspace="5" hspace="5" src="main_02.png" alt=""> <h2 id="6">Preconditioning the GMRES</h2><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022b</a><br></p></div><!--
+</pre><img vspace="5" hspace="5" src="main_01.png" alt=""> <img vspace="5" hspace="5" src="main_02.png" alt=""> <img vspace="5" hspace="5" src="main_03.png" alt=""> <img vspace="5" hspace="5" src="main_04.png" alt=""> <img vspace="5" hspace="5" src="main_05.png" alt=""> <img vspace="5" hspace="5" src="main_06.png" alt=""> <h2 id="6">Preconditioning the GMRES</h2><p>a) Simple derivation here Let <img src="main_eq16247206711595679522.png" alt="$x$"> be a solution to <img src="main_eq05667327845782490812.png" alt="$Ax=b$">. We now left multiple both sides by <img src="main_eq01025619302807502650.png" alt="$A_1^{-1}$"> to get <img src="main_eq03897863549543872490.png" alt="$A_1^{-1}Ax=A_1^{-1}b$"> which is equivalent to <img src="main_eq04673280612819742601.png" alt="$\tilde{A}x = \tilde{b}$"> by definition of <img src="main_eq11551263517038117603.png" alt="$\tilde{A}$"> and <img src="main_eq16177386682490695482.png" alt="$\tilde{b}$">. Thus <img src="main_eq16247206711595679522.png" alt="$x$"> is a solution to the preconditioned problem.</p><p>Now suppose that <img src="main_eq16247206711595679522.png" alt="$x$"> is a solution to the preconditioned problem : <img src="main_eq04673280612819742601.png" alt="$\tilde{A}x = \tilde{b}$">. We multiply both sides by <img src="main_eq11851299345599123836.png" alt="$A_1$"> and expand to get: <img src="main_eq18018796579737887401.png" alt="$A_1 A_1^{-1} A x = A_1 A_1^{-1} b$"> \rightarrow % <img src="main_eq16967141724594739066.png" alt="$Ax = b$"> Thus the solution to the preconditioned problem is also a solution to the original problem.</p><p>b) <img src="main_eq11551263517038117603.png" alt="$\tilde{A}$"> and <img src="main_eq16177386682490695482.png" alt="$\tilde{b}$"> are easy to calculate be cause they are both derived using <img src="main_eq11851299345599123836.png" alt="$A_1$">. <img src="main_eq11851299345599123836.png" alt="$A_1$"> is a symetric tridiagonal matrix making it very easy to find the invers reguardless of size using a variety of algorithms.</p><p>c) Repeat problem 3 using the preconditioned matrix.</p><pre class="codeinput"><span class="comment">% define arrays</span>
+ns = [16,32,64,128]; <span class="comment">% number of basis functions to use</span>
+ls = 2.^(1:7); <span class="comment">% number of iterations</span>
+
+Vs = {@(n) 1, @(n) n+1}; <span class="comment">% set of different (constant) functions for</span>
+
+errors = zeros([length(ls),length(ns),length(Vs)]); <span class="comment">% empty matrix to store the errors</span>
+solutions = cell(size(errors)); <span class="comment">% empty cell array to store the solutions after they have been calculated</span>
+xplot = cell([length(ns),1]);
+<span class="keyword">for</span> i = 1:length(ns)
+    xplot{i} = 0:1/(ns(i)+1):1;
+<span class="keyword">end</span>
+
+<span class="comment">% loop through each case</span>
+<span class="keyword">for</span> i = 1:length(Vs)
+    V = Vs{i};
+    <span class="keyword">for</span> j = 1:length(ns)
+        n = ns(j);
+        <span class="keyword">for</span> k = 1:length(ls)
+            l = ls(k);
+            <span class="comment">% create the input matrices</span>
+            [A,b,M] = CalcAandb(n,V(n));
+            <span class="comment">% convert to the pre-conditioned problem.</span>
+            Minv = inv(M);
+            Atilde = Minv*A;
+            btilde = Minv*b;
+            [x,errors(k,j,i),~,~] = mygmres(l,btilde,zeros([n,1]),n,M,Atilde);
+            solutions{k,j,i} = [0;x;0];
+        <span class="keyword">end</span>  <span class="comment">% k = 1:length(ls)</span>
+    <span class="keyword">end</span> <span class="comment">% j = 1:length(ns)</span>
+<span class="keyword">end</span> <span class="comment">% i = 1:length(Vs)</span>
+</pre><p>Produce the plot for <img src="main_eq09748024660719818071.png" alt="$V(x) = 1$"></p><pre class="codeinput">sq=squeeze(errors(:,:,1));
+
+figure
+[X,Y] = meshgrid(ns,ls);
+surf(X,Y,sq)
+ax=gca;
+ax.ZScale = <span class="string">'log'</span>;
+title(<span class="string">"V(x) = 1"</span>,<span class="string">"FontSize"</span>,16)
+ylabel(<span class="string">"l"</span>,<span class="string">"FontSize"</span>,14)
+xlabel(<span class="string">"n"</span>,<span class="string">"FontSize"</span>,14)
+zlabel(<span class="string">"Error"</span>,<span class="string">"FontSize"</span>,14)
+view([143.7,25.8])
+<span class="comment">%zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])</span>
+snapnow;
+
+hold <span class="string">on</span>
+Hplane = surf(X,Y,1e-6*ones(size(X)));
+Hplane.EdgeColor = <span class="string">'none'</span>;
+Hplane.FaceAlpha = 0.5;
+
+figure()
+<span class="keyword">for</span> i = 1:length(ns)
+    plot(xplot{i},solutions{7,i,1},<span class="string">'.-'</span>)
+    hold <span class="string">on</span>
+<span class="keyword">end</span>
+legend(string(ns))
+hold <span class="string">off</span>
+xlabel(<span class="string">'x'</span>)
+ylabel(<span class="string">'u'</span>)
+</pre><p>Produce the plot for <img src="main_eq17408539410532043687.png" alt="$V(x) = n+1$"></p><pre class="codeinput">sq=squeeze(errors(:,:,2));
+
+figure
+surf(X,Y,sq)
+ax=gca;
+ax.ZScale = <span class="string">'log'</span>;
+title(<span class="string">"V(x) = n+1"</span>,<span class="string">"FontSize"</span>,16)
+ylabel(<span class="string">"l"</span>,<span class="string">"FontSize"</span>,14)
+xlabel(<span class="string">"n"</span>,<span class="string">"FontSize"</span>,14)
+zlabel(<span class="string">"Error"</span>,<span class="string">"FontSize"</span>,14)
+view([143.7,25.8])
+<span class="comment">%zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])</span>
+snapnow;
+
+hold <span class="string">on</span>
+Hplane = surf(X,Y,1e-6*ones(size(X)));
+Hplane.EdgeColor = <span class="string">'none'</span>;
+Hplane.FaceAlpha = 0.5;
+
+figure()
+<span class="keyword">for</span> i = 1:length(ns)
+    plot(xplot{i},solutions{7,i,2},<span class="string">'.-'</span>)
+    hold <span class="string">on</span>
+<span class="keyword">end</span>
+legend(string(ns))
+hold <span class="string">off</span>
+xlabel(<span class="string">'x'</span>)
+ylabel(<span class="string">'u'</span>)
+</pre><pre class="codeoutput">Warning: Rank deficient, rank = 75, tol =  1.334761e+08. 
+Warning: Rank deficient, rank = 21, tol =  1.313079e+15. 
+Warning: Rank deficient, rank = 20, tol =  1.733537e+58. 
+Warning: Rank deficient, rank = 49, tol =  1.558921e+12. 
+Warning: Rank deficient, rank = 49, tol =  1.040423e+04. 
+Warning: Rank deficient, rank = 48, tol =  2.034744e+22. 
+Warning: Rank deficient, rank = 31, tol =  1.367225e-01. 
+Warning: Rank deficient, rank = 30, tol =  1.747100e+14. 
+Warning: Rank deficient, rank = 29, tol =  1.459321e+44. 
+Warning: Rank deficient, rank = 15, tol =  2.775890e+20. 
+Warning: Rank deficient, rank = 14, tol =  4.335313e+82. 
+Warning: Rank deficient, rank = 17, tol =  3.169915e+39. 
+</pre><img vspace="5" hspace="5" src="main_07.png" alt=""> <img vspace="5" hspace="5" src="main_08.png" alt=""> <img vspace="5" hspace="5" src="main_09.png" alt=""> <img vspace="5" hspace="5" src="main_10.png" alt=""> <img vspace="5" hspace="5" src="main_11.png" alt=""> <img vspace="5" hspace="5" src="main_12.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2023a</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Linear Algebra Group Assignment
 % Authors: Tyce Olaveson and Levi Moats 
@@ -292,25 +424,175 @@ sq=squeeze(errors(:,:,1));
 figure
 [X,Y] = meshgrid(ns,ls);
 surf(X,Y,sq)
+ax=gca;
+ax.ZScale = 'log';
 title("V(x) = 1","FontSize",16)
 ylabel("l","FontSize",14)
 xlabel("n","FontSize",14)
 zlabel("Error","FontSize",14)
 view([143.7,25.8])
+%zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
 snapnow;
+
+hold on
+Hplane = surf(X,Y,1e-6*ones(size(X)));
+Hplane.EdgeColor = 'none';
+Hplane.FaceAlpha = 0.5;
+
+figure()
+for i = 1:length(ns)
+    plot(xplot{i},solutions{7,i,1},'.-')
+    hold on
+end
+legend(string(ns))
+hold off
+xlabel('x')
+ylabel('u')
 %%%
 % Produce the plot for $V(x) = n+1$
 sq=squeeze(errors(:,:,2));
 
 figure
 surf(X,Y,sq)
+ax=gca;
+ax.ZScale = 'log';
 title("V(x) = n+1","FontSize",16)
 ylabel("l","FontSize",14)
 xlabel("n","FontSize",14)
 zlabel("Error","FontSize",14)
 view([143.7,25.8])
+%zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
 snapnow;
+
+hold on
+Hplane = surf(X,Y,1e-6*ones(size(X)));
+Hplane.EdgeColor = 'none';
+Hplane.FaceAlpha = 0.5;
+
+figure()
+for i = 1:length(ns)
+    plot(xplot{i},solutions{7,i,2},'.-')
+    hold on
+end
+legend(string(ns))
+hold off
+xlabel('x')
+ylabel('u')
 %% Preconditioning the GMRES
+% a) Simple derivation here
+% Let $x$ be a solution to $Ax=b$. We now left multiple both sides by
+% $A_1^{-1}$ to get $A_1^{-1}Ax=A_1^{-1}b$ which is equivalent to
+% $\tilde{A}x = \tilde{b}$ by definition of $\tilde{A}$ and $\tilde{b}$.
+% Thus $x$ is a solution to the preconditioned problem.
 %
+% Now suppose that $x$ is a solution to the preconditioned problem : $\tilde{A}x =
+% \tilde{b}$. We multiply both sides by $A_1$ and expand to get:
+% $A_1 A_1^{-1} A x = A_1 A_1^{-1} b$ \rightarrow % $Ax = b$
+% Thus the solution to the preconditioned problem is also a solution to the
+% original problem.
+%  
+% 
+% b) $\tilde{A}$ and $\tilde{b}$ are easy to calculate be cause they are
+% both derived using $A_1$. $A_1$ is a symetric tridiagonal matrix making it very
+% easy to find the invers reguardless of size using a variety of
+% algorithms. 
+%
+% c) Repeat problem 3 using the preconditioned matrix. 
+%
+
+% define arrays
+ns = [16,32,64,128]; % number of basis functions to use
+ls = 2.^(1:7); % number of iterations
+
+Vs = {@(n) 1, @(n) n+1}; % set of different (constant) functions for
+
+errors = zeros([length(ls),length(ns),length(Vs)]); % empty matrix to store the errors
+solutions = cell(size(errors)); % empty cell array to store the solutions after they have been calculated
+xplot = cell([length(ns),1]);
+for i = 1:length(ns)
+    xplot{i} = 0:1/(ns(i)+1):1;
+end
+
+% loop through each case
+for i = 1:length(Vs)
+    V = Vs{i};
+    for j = 1:length(ns)
+        n = ns(j);
+        for k = 1:length(ls)
+            l = ls(k);
+            % create the input matrices
+            [A,b,M] = CalcAandb(n,V(n));
+            % convert to the pre-conditioned problem.
+            Minv = inv(M);
+            Atilde = Minv*A;
+            btilde = Minv*b;
+            [x,errors(k,j,i),~,~] = mygmres(l,btilde,zeros([n,1]),n,M,Atilde);
+            solutions{k,j,i} = [0;x;0];
+        end  % k = 1:length(ls)
+    end % j = 1:length(ns)
+end % i = 1:length(Vs)
+
+%%%
+% Produce the plot for $V(x) = 1$
+sq=squeeze(errors(:,:,1));
+
+figure
+[X,Y] = meshgrid(ns,ls);
+surf(X,Y,sq)
+ax=gca;
+ax.ZScale = 'log';
+title("V(x) = 1","FontSize",16)
+ylabel("l","FontSize",14)
+xlabel("n","FontSize",14)
+zlabel("Error","FontSize",14)
+view([143.7,25.8])
+%zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
+snapnow;
+
+hold on
+Hplane = surf(X,Y,1e-6*ones(size(X)));
+Hplane.EdgeColor = 'none';
+Hplane.FaceAlpha = 0.5;
+
+figure()
+for i = 1:length(ns)
+    plot(xplot{i},solutions{7,i,1},'.-')
+    hold on
+end
+legend(string(ns))
+hold off
+xlabel('x')
+ylabel('u')
+
+%%%
+% Produce the plot for $V(x) = n+1$
+sq=squeeze(errors(:,:,2));
+
+figure
+surf(X,Y,sq)
+ax=gca;
+ax.ZScale = 'log';
+title("V(x) = n+1","FontSize",16)
+ylabel("l","FontSize",14)
+xlabel("n","FontSize",14)
+zlabel("Error","FontSize",14)
+view([143.7,25.8])
+%zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
+snapnow;
+
+hold on
+Hplane = surf(X,Y,1e-6*ones(size(X)));
+Hplane.EdgeColor = 'none';
+Hplane.FaceAlpha = 0.5;
+
+figure()
+for i = 1:length(ns)
+    plot(xplot{i},solutions{7,i,2},'.-')
+    hold on
+end
+legend(string(ns))
+hold off
+xlabel('x')
+ylabel('u')
 ##### SOURCE END #####
 --></body></html>
