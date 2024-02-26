@@ -65,6 +65,8 @@
 % b = [2;3;9]; x = [-2.1; -0.22; 0.11]
 % b = [5;-3;8]; x = [4.8; -2.6; 1.5]
 A = [1 4 7; 2 9 7; 5 8 3];
+% Condition number
+cond(A)
 b = [1;8;2]; x = [-2.18; 1.84; -0.6]; x0 = zeros([3,1]); M = eye(3);
 [xfit,er,V,H] = mygmres(3,b,x0,3,M,A);
 disp(round(xfit,2))
@@ -130,12 +132,12 @@ xlabel("n","FontSize",14)
 zlabel("Error","FontSize",14)
 view([143.7,25.8])
 %zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
-snapnow;
 
 hold on
 Hplane = surf(X,Y,1e-6*ones(size(X)));
 Hplane.EdgeColor = 'none';
 Hplane.FaceAlpha = 0.5;
+snapnow;
 
 figure()
 for i = 1:length(ns)
@@ -144,7 +146,8 @@ for i = 1:length(ns)
 end
 legend(string(ns))
 hold off
-
+xlabel('x')
+ylabel('u')
 %%%
 % Produce the plot for $V(x) = n+1$
 sq=squeeze(errors(:,:,2));
@@ -159,12 +162,12 @@ xlabel("n","FontSize",14)
 zlabel("Error","FontSize",14)
 view([143.7,25.8])
 %zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
-snapnow;
 
 hold on
 Hplane = surf(X,Y,1e-6*ones(size(X)));
 Hplane.EdgeColor = 'none';
 Hplane.FaceAlpha = 0.5;
+snapnow;
 
 figure()
 for i = 1:length(ns)
@@ -173,17 +176,18 @@ for i = 1:length(ns)
 end
 legend(string(ns))
 hold off
+xlabel('x')
+ylabel('u')
 %% Preconditioning the GMRES
 % a) Simple derivation here
 % Let $x$ be a solution to $Ax=b$. We now left multiple both sides by
 % $A_1^{-1}$ to get $A_1^{-1}Ax=A_1^{-1}b$ which is equivalent to
 % $\tilde{A}x = \tilde{b}$ by definition of $\tilde{A}$ and $\tilde{b}$.
-% Thus $x$ is a solution to the preconditioned problem
+% Thus $x$ is a solution to the preconditioned problem.
+%
 % Now suppose that $x$ is a solution to the preconditioned problem : $\tilde{A}x =
-% \tilde{b}$.
-% Now we multiply both sides by $A_1$ and expand to get:
-% $A_1 A_1^{-1} A x = A_1 A_1^{-1} b$
-% $ Ax = b$
+% \tilde{b}$. We multiply both sides by $A_1$ and expand to get:
+% $A_1 A_1^{-1} A x = A_1 A_1^{-1} b \rightarrow Ax = b$.
 % Thus the solution to the preconditioned problem is also a solution to the
 % original problem.
 %  
@@ -217,9 +221,84 @@ for i = 1:length(Vs)
         for k = 1:length(ls)
             l = ls(k);
             % create the input matrices
-            [A,b] = CalcAandb(n,V(n));
-            [x,errors(k,j,i),~,~] = mygmres(l,b,zeros([n,1]),n,eye(n),A);
+            [A,b,M] = CalcAandb(n,V(n));
+            % convert to the pre-conditioned problem.
+            Atilde = M\A; % This solves the problem M Atilde = A
+            btilde = M\b;
+            [x,errors(k,j,i)] = mygmres(l,btilde,zeros([n,1]),n,eye(n),Atilde);
             solutions{k,j,i} = [0;x;0];
         end  % k = 1:length(ls)
     end % j = 1:length(ns)
 end % i = 1:length(Vs)
+
+%%%
+% Produce the plot for $V(x) = 1$
+sq=squeeze(errors(:,:,1));
+
+figure
+[X,Y] = meshgrid(ns,ls);
+surf(X,Y,sq)
+ax=gca;
+ax.ZScale = 'log';
+title("V(x) = 1","FontSize",16)
+ylabel("l","FontSize",14)
+xlabel("n","FontSize",14)
+zlabel("Error","FontSize",14)
+view([143.7,25.8])
+%zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
+
+hold on
+Hplane = surf(X,Y,1e-6*ones(size(X)));
+Hplane.EdgeColor = 'none';
+Hplane.FaceAlpha = 0.5;
+snapnow;
+
+figure()
+for i = 1:length(ns)
+    [~,mind] = min(errors(:,i,2));
+    plot(xplot{i},solutions{mind,i,1},'.-')
+    hold on
+end
+legend(string(ns))
+hold off
+xlabel('x')
+ylabel('u')
+title('V(x) = 1')
+
+%%%
+% Produce the plot for $V(x) = n+1$
+sq=squeeze(errors(:,:,2));
+
+figure
+surf(X,Y,sq)
+ax=gca;
+ax.ZScale = 'log';
+title("V(x) = n+1","FontSize",16)
+ylabel("l","FontSize",14)
+xlabel("n","FontSize",14)
+zlabel("Error","FontSize",14)
+view([143.7,25.8])
+%zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
+
+hold on
+Hplane = surf(X,Y,1e-6*ones(size(X)));
+Hplane.EdgeColor = 'none';
+Hplane.FaceAlpha = 0.5;
+snapnow;
+
+figure()
+for i = 1:length(ns)
+    [~,mind] = min(errors(:,i,2));
+    plot(xplot{i},solutions{mind,i,2},'.-')
+    hold on
+end
+legend(string(ns))
+hold off
+xlabel('x')
+ylabel('u')
+title('V(x) = n+1')
+
+%%%
+% The rate of convergence for the precodnitioned GMRES problem was much
+% faster than the previous one. The first thing A matrix has a condition
+% number of 

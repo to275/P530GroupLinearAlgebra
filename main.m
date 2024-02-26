@@ -65,6 +65,7 @@
 % b = [2;3;9]; x = [-2.1; -0.22; 0.11]
 % b = [5;-3;8]; x = [4.8; -2.6; 1.5]
 A = [1 4 7; 2 9 7; 5 8 3];
+
 b = [1;8;2]; x = [-2.18; 1.84; -0.6]; x0 = zeros([3,1]); M = eye(3);
 [xfit,er,V,H] = mygmres(3,b,x0,3,M,A);
 disp(round(xfit,2))
@@ -130,12 +131,12 @@ xlabel("n","FontSize",14)
 zlabel("Error","FontSize",14)
 view([143.7,25.8])
 %zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
-snapnow;
 
 hold on
 Hplane = surf(X,Y,1e-6*ones(size(X)));
 Hplane.EdgeColor = 'none';
 Hplane.FaceAlpha = 0.5;
+snapnow;
 
 figure()
 for i = 1:length(ns)
@@ -160,12 +161,12 @@ xlabel("n","FontSize",14)
 zlabel("Error","FontSize",14)
 view([143.7,25.8])
 %zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
-snapnow;
 
 hold on
 Hplane = surf(X,Y,1e-6*ones(size(X)));
 Hplane.EdgeColor = 'none';
 Hplane.FaceAlpha = 0.5;
+snapnow;
 
 figure()
 for i = 1:length(ns)
@@ -244,12 +245,12 @@ xlabel("n","FontSize",14)
 zlabel("Error","FontSize",14)
 view([143.7,25.8])
 %zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
-snapnow;
 
 hold on
 Hplane = surf(X,Y,1e-6*ones(size(X)));
 Hplane.EdgeColor = 'none';
 Hplane.FaceAlpha = 0.5;
+snapnow;
 
 figure()
 for i = 1:length(ns)
@@ -277,12 +278,12 @@ xlabel("n","FontSize",14)
 zlabel("Error","FontSize",14)
 view([143.7,25.8])
 %zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
-snapnow;
 
 hold on
 Hplane = surf(X,Y,1e-6*ones(size(X)));
 Hplane.EdgeColor = 'none';
 Hplane.FaceAlpha = 0.5;
+snapnow;
 
 figure()
 for i = 1:length(ns)
@@ -295,3 +296,13 @@ hold off
 xlabel('x')
 ylabel('u')
 title('V(x) = n+1')
+
+% c) condition numbers
+cond(A)
+cond(Atilde)
+%%%
+% The rate of convergence for the precodnitioned GMRES problem was much
+% faster than the previous one. The first $A$ matrix has a condition
+% number of 324 while $tilde{A}$ has a conditon number of 220. This means
+% that the preconditioned matrix is farther from being singular, causing it
+% to converge faster. 

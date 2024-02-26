@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>Linear Algebra Group Assignment</title><meta name="generator" content="MATLAB 9.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2024-02-26"><meta name="DC.source" content="main.m"><style type="text/css">
+      --><title>Linear Algebra Group Assignment</title><meta name="generator" content="MATLAB 9.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2024-02-26"><meta name="DC.source" content="main.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,7 +67,8 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h1>Linear Algebra Group Assignment</h1><!--introduction--><p>Authors: Tyce Olaveson and Levi Moats Class: Physics 530 Professor: Dr Transtrum Date: 02/26/2024</p><p>Consider the one dimenstional boundary value problem that arises in fluid dynamics</p><p><img src="main_eq12625388480741236538.png" alt="$$-u''(x) + V(x)u'(x) = f(x), x\in[0,1]$$"></p><p>where</p><p><img src="main_eq00165776359285064237.png" alt="$$u(0) = u(1) = 0$$"></p><p>where we will take <img src="main_eq05692257027104938069.png" alt="$V(x),f(x)$"> to be constants: <img src="main_eq16630049483923436071.png" alt="$V(x) = \gamma$"> and <img src="main_eq11476071571782016371.png" alt="$f(x) = 1$"></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Problem Formulation</a></li><li><a href="#2">Implement the GMRES algorithm</a></li><li><a href="#3">Solving the FEM problem</a></li><li><a href="#6">Preconditioning the GMRES</a></li></ul></div><h2 id="1">Problem Formulation</h2><p>a) Using a test function <img src="main_eq16179117359969153947.png" alt="$\phi$">, the above boundary value problem can be rewritten in the weak form as the following:</p><p><img src="main_eq00182307570955008526.png" alt="$$A_1[\phi,u] + A_2[\phi,u] = F[\phi]$$"></p><p>where</p><p><img src="main_eq12445790906574176086.png" alt="$$A_1[\phi,u] = \int_{0}^{1} \phi' \cdot u' dx$$"></p><p><img src="main_eq08403486759626861935.png" alt="$$A_2[\phi,u] = \int_{0}^{1} v(x) \cdot u' \cdot \phi dx$$"></p><p><img src="main_eq05804388856437582391.png" alt="$$F[\phi] = \int_{0}^{1} f \cdot \phi dx$$"></p><p>b) The "hat" functions from class, <img src="main_eq12501197733264304350.png" alt="$\phi_i$">, can be used to aproximate <img src="main_eq15012583454694319273.png" alt="$u$"> using linear combinations: <img src="main_eq04666691619410396832.png" alt="$u(x) = \sum_{i} u_i \phi_i(x)$">. This allows the weak form of the boundary value problem to be written in the form:</p><p><img src="main_eq00762848181973046606.png" alt="$$Ax = b$$"></p><p>where</p><p><img src="main_eq10112883816714014336.png" alt="$$A = A_1 + A_2$$"></p><p><img src="main_eq08613210504128538471.png" alt="$$b = F_i$$"></p><p><img src="main_eq04239403822805000688.png" alt="$$x = u(x)$$"></p><p>From above</p><p>It can be shown that <img src="main_eq11851299345599123836.png" alt="$A_1$"> is a symetric tridiagonal matrix with <img src="main_eq07622452428426434772.png" alt="$\frac{2}{\Delta x}$"> on the diagonal and <img src="main_eq05952722044691464124.png" alt="$\frac{-1}{\Delta x}$"> on the off diagonals. <img src="main_eq16868478922075211937.png" alt="$A_2$"> is a skew-symmetric tridiagonal matrix with 0 on the diagonal, <img src="main_eq15440564927394894381.png" alt="$\frac{\gamma}{2}$"> on the upper off diagonal, and <img src="main_eq10172575927492301439.png" alt="$\frac{-\gamma}{2}$"> on the lower off diagonal.</p><p>It can be shown that <img src="main_eq09376488099935068611.png" alt="$F_i$"> is a vector is an n by 1 vector where all the values are <img src="main_eq10158981538422097367.png" alt="$\Delta x$">.</p><p>c) A function CalcAandb.m has been written and is included in this repository. It accepts <img src="main_eq17555110721583917243.png" alt="$n$"> and <img src="main_eq17508378523367818359.png" alt="$\gamma$"> as inputs and returns a sparse A matrix and</p><h2 id="2">Implement the GMRES algorithm</h2><p>Examples from the text: A = [1 4 7; 2 9 7; 5 8 3]; b = [1;8;2]; x = [-2.18; 1.84; -0.6] b = [2;3;9]; x = [-2.1; -0.22; 0.11] b = [5;-3;8]; x = [4.8; -2.6; 1.5]</p><pre class="codeinput">A = [1 4 7; 2 9 7; 5 8 3];
+  </style></head><body><div class="content"><h1>Linear Algebra Group Assignment</h1><!--introduction--><p>Authors: Tyce Olaveson and Levi Moats Class: Physics 530 Professor: Dr Transtrum Date: 02/26/2024</p><p>Consider the one dimenstional boundary value problem that arises in fluid dynamics</p><p><img src="main_eq12625388480741236538.png" alt="$$-u''(x) + V(x)u'(x) = f(x), x\in[0,1]$$" style="width:176px;height:12px;"></p><p>where</p><p><img src="main_eq00165776359285064237.png" alt="$$u(0) = u(1) = 0$$" style="width:75px;height:11px;"></p><p>where we will take <img src="main_eq05692257027104938069.png" alt="$V(x),f(x)$" style="width:49px;height:11px;"> to be constants: <img src="main_eq16630049483923436071.png" alt="$V(x) = \gamma$" style="width:44px;height:11px;"> and <img src="main_eq11476071571782016371.png" alt="$f(x) = 1$" style="width:41px;height:11px;"></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Problem Formulation</a></li><li><a href="#2">Implement the GMRES algorithm</a></li><li><a href="#3">Solving the FEM problem</a></li><li><a href="#6">Preconditioning the GMRES</a></li></ul></div><h2 id="1">Problem Formulation</h2><p>a) Using a test function <img src="main_eq16179117359969153947.png" alt="$\phi$" style="width:6px;height:10px;">, the above boundary value problem can be rewritten in the weak form as the following:</p><p><img src="main_eq00182307570955008526.png" alt="$$A_1[\phi,u] + A_2[\phi,u] = F[\phi]$$" style="width:121px;height:11px;"></p><p>where</p><p><img src="main_eq12445790906574176086.png" alt="$$A_1[\phi,u] = \int_{0}^{1} \phi' \cdot u' dx$$" style="width:106px;height:28px;"></p><p><img src="main_eq08403486759626861935.png" alt="$$A_2[\phi,u] = \int_{0}^{1} v(x) \cdot u' \cdot \phi dx$$" style="width:132px;height:28px;"></p><p><img src="main_eq05804388856437582391.png" alt="$$F[\phi] = \int_{0}^{1} f \cdot \phi dx$$" style="width:86px;height:28px;"></p><p>b) The "hat" functions from class, <img src="main_eq12501197733264304350.png" alt="$\phi_i$" style="width:9px;height:10px;">, can be used to aproximate <img src="main_eq15012583454694319273.png" alt="$u$" style="width:6px;height:6px;"> using linear combinations: <img src="main_eq04666691619410396832.png" alt="$u(x) = \sum_{i} u_i \phi_i(x)$" style="width:86px;height:12px;">. This allows the weak form of the boundary value problem to be written in the form:</p><p><img src="main_eq00762848181973046606.png" alt="$$Ax = b$$" style="width:34px;height:9px;"></p><p>where</p><p><img src="main_eq10112883816714014336.png" alt="$$A = A_1 + A_2$$" style="width:41px;height:7px;"></p><p><img src="main_eq08613210504128538471.png" alt="$$b = F_i$$" style="width:20px;height:7px;"></p><p><img src="main_eq04239403822805000688.png" alt="$$x = u(x)$$" style="width:28px;height:8px;"></p><p>From above</p><p>It can be shown that <img src="main_eq11851299345599123836.png" alt="$A_1$" style="width:8px;height:7px;"> is a symetric tridiagonal matrix with <img src="main_eq07622452428426434772.png" alt="$\frac{2}{\Delta x}$" style="width:8px;height:9px;"> on the diagonal and <img src="main_eq05952722044691464124.png" alt="$\frac{-1}{\Delta x}$" style="width:8px;height:9px;"> on the off diagonals. <img src="main_eq16868478922075211937.png" alt="$A_2$" style="width:8px;height:7px;"> is a skew-symmetric tridiagonal matrix with 0 on the diagonal, <img src="main_eq15440564927394894381.png" alt="$\frac{\gamma}{2}$" style="width:3px;height:9px;"> on the upper off diagonal, and <img src="main_eq10172575927492301439.png" alt="$\frac{-\gamma}{2}$" style="width:7px;height:9px;"> on the lower off diagonal.</p><p>It can be shown that <img src="main_eq09376488099935068611.png" alt="$F_i$" style="width:7px;height:7px;"> is a vector is an n by 1 vector where all the values are <img src="main_eq10158981538422097367.png" alt="$\Delta x$" style="width:10px;height:6px;">.</p><p>c) A function CalcAandb.m has been written and is included in this repository. It accepts <img src="main_eq17555110721583917243.png" alt="$n$" style="width:5px;height:4px;"> and <img src="main_eq17508378523367818359.png" alt="$\gamma$" style="width:4px;height:5px;"> as inputs and returns a sparse A matrix and</p><h2 id="2">Implement the GMRES algorithm</h2><p>Examples from the text: A = [1 4 7; 2 9 7; 5 8 3]; b = [1;8;2]; x = [-2.18; 1.84; -0.6] b = [2;3;9]; x = [-2.1; -0.22; 0.11] b = [5;-3;8]; x = [4.8; -2.6; 1.5]</p><pre class="codeinput">A = [1 4 7; 2 9 7; 5 8 3];
+
 b = [1;8;2]; x = [-2.18; 1.84; -0.6]; x0 = zeros([3,1]); M = eye(3);
 [xfit,er,V,H] = mygmres(3,b,x0,3,M,A);
 disp(round(xfit,2))
@@ -82,20 +83,24 @@ b = [5;-3;8]; x = [4.8; -2.6; 1.5]; x0 = zeros([3,1]); M = eye(3);
 disp(round(xfit,2))
 disp(<span class="string">' '</span>)
 </pre><pre class="codeoutput">break
-  -2.180000000000000
-   1.840000000000000
-  -0.590000000000000
-     1.258252761241844e-15
+   -2.1800
+    1.8400
+   -0.5900
+
+   1.2583e-15
+
 break
-   2.080000000000000
-  -0.220000000000000
-   0.110000000000000
+    2.0800
+   -0.2200
+    0.1100
+
 break
-   4.800000000000000
-  -2.560000000000000
-   1.490000000000000
+    4.8000
+   -2.5600
+    1.4900
+
  
-</pre><h2 id="3">Solving the FEM problem</h2><p>Use your GMRES function to solve the finite-element formulation of the variational problem for the cases <img src="main_eq09748024660719818071.png" alt="$V(x) = 1$"> and <img src="main_eq17408539410532043687.png" alt="$V(x) = n+1$"> using <img src="main_eq09319732146067371049.png" alt="$M$"> as the identity matrix. For each case, run with <img src="main_eq09942781562123861180.png" alt="$n=16,32,64,128$"> and <img src="main_eq14942248550456811781.png" alt="$l=2,4,8,16,32,64,...,$"> increasing <img src="main_eq17216086743898025322.png" alt="$l$"> until the error (i.e., the norm of the residual divided by <img src="main_eq17555110721583917243.png" alt="$n$">) is below <img src="main_eq13935977806850155989.png" alt="$10^{-6}$">. Plot your most accurate solution (as a function of x) as well as teh error versus functions of <img src="main_eq17555110721583917243.png" alt="$n$"> and <img src="main_eq17216086743898025322.png" alt="$l$">.</p><pre class="codeinput"><span class="comment">% define arrays</span>
+</pre><h2 id="3">Solving the FEM problem</h2><p>Use your GMRES function to solve the finite-element formulation of the variational problem for the cases <img src="main_eq09748024660719818071.png" alt="$V(x) = 1$" style="width:29px;height:8px;"> and <img src="main_eq17408539410532043687.png" alt="$V(x) = n+1$" style="width:42px;height:8px;"> using <img src="main_eq09319732146067371049.png" alt="$M$" style="width:8px;height:5px;"> as the identity matrix. For each case, run with <img src="main_eq09942781562123861180.png" alt="$n=16,32,64,128$" style="width:57px;height:7px;"> and <img src="main_eq14942248550456811781.png" alt="$l=2,4,8,16,32,64,...,$" style="width:72px;height:7px;"> increasing <img src="main_eq17216086743898025322.png" alt="$l$" style="width:2px;height:6px;"> until the error (i.e., the norm of the residual divided by <img src="main_eq17555110721583917243.png" alt="$n$" style="width:5px;height:4px;">) is below <img src="main_eq13935977806850155989.png" alt="$10^{-6}$" style="width:14px;height:7px;">. Plot your most accurate solution (as a function of x) as well as teh error versus functions of <img src="main_eq17555110721583917243.png" alt="$n$" style="width:5px;height:4px;"> and <img src="main_eq17216086743898025322.png" alt="$l$" style="width:2px;height:6px;">.</p><pre class="codeinput"><span class="comment">% define arrays</span>
 ns = [16,32,64,128]; <span class="comment">% number of basis functions to use</span>
 ls = 2.^(1:7); <span class="comment">% number of iterations</span>
 
@@ -122,7 +127,7 @@ xplot = cell([length(ns),1]);
         <span class="keyword">end</span>  <span class="comment">% k = 1:length(ls)</span>
     <span class="keyword">end</span> <span class="comment">% j = 1:length(ns)</span>
 <span class="keyword">end</span> <span class="comment">% i = 1:length(Vs)</span>
-</pre><p>Produce the plot for <img src="main_eq09748024660719818071.png" alt="$V(x) = 1$"></p><pre class="codeinput">sq=squeeze(errors(:,:,1));
+</pre><p>Produce the plot for <img src="main_eq09748024660719818071.png" alt="$V(x) = 1$" style="width:29px;height:8px;"></p><pre class="codeinput">sq=squeeze(errors(:,:,1));
 
 figure
 [X,Y] = meshgrid(ns,ls);
@@ -135,12 +140,12 @@ xlabel(<span class="string">"n"</span>,<span class="string">"FontSize"</span>,14
 zlabel(<span class="string">"Error"</span>,<span class="string">"FontSize"</span>,14)
 view([143.7,25.8])
 <span class="comment">%zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])</span>
-snapnow;
 
 hold <span class="string">on</span>
 Hplane = surf(X,Y,1e-6*ones(size(X)));
 Hplane.EdgeColor = <span class="string">'none'</span>;
 Hplane.FaceAlpha = 0.5;
+snapnow;
 
 figure()
 <span class="keyword">for</span> i = 1:length(ns)
@@ -151,7 +156,7 @@ legend(string(ns))
 hold <span class="string">off</span>
 xlabel(<span class="string">'x'</span>)
 ylabel(<span class="string">'u'</span>)
-</pre><p>Produce the plot for <img src="main_eq17408539410532043687.png" alt="$V(x) = n+1$"></p><pre class="codeinput">sq=squeeze(errors(:,:,2));
+</pre><p>Produce the plot for <img src="main_eq17408539410532043687.png" alt="$V(x) = n+1$" style="width:42px;height:8px;"></p><pre class="codeinput">sq=squeeze(errors(:,:,2));
 
 figure
 surf(X,Y,sq)
@@ -163,12 +168,12 @@ xlabel(<span class="string">"n"</span>,<span class="string">"FontSize"</span>,14
 zlabel(<span class="string">"Error"</span>,<span class="string">"FontSize"</span>,14)
 view([143.7,25.8])
 <span class="comment">%zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])</span>
-snapnow;
 
 hold <span class="string">on</span>
 Hplane = surf(X,Y,1e-6*ones(size(X)));
 Hplane.EdgeColor = <span class="string">'none'</span>;
 Hplane.FaceAlpha = 0.5;
+snapnow;
 
 figure()
 <span class="keyword">for</span> i = 1:length(ns)
@@ -198,7 +203,7 @@ break
 break
 break
 break
-</pre><img vspace="5" hspace="5" src="main_01.png" alt=""> <img vspace="5" hspace="5" src="main_02.png" alt=""> <img vspace="5" hspace="5" src="main_03.png" alt=""> <img vspace="5" hspace="5" src="main_04.png" alt=""> <img vspace="5" hspace="5" src="main_05.png" alt=""> <img vspace="5" hspace="5" src="main_06.png" alt=""> <h2 id="6">Preconditioning the GMRES</h2><p>a) Simple derivation here Let <img src="main_eq16247206711595679522.png" alt="$x$"> be a solution to <img src="main_eq05667327845782490812.png" alt="$Ax=b$">. We now left multiple both sides by <img src="main_eq01025619302807502650.png" alt="$A_1^{-1}$"> to get <img src="main_eq03897863549543872490.png" alt="$A_1^{-1}Ax=A_1^{-1}b$"> which is equivalent to <img src="main_eq04673280612819742601.png" alt="$\tilde{A}x = \tilde{b}$"> by definition of <img src="main_eq11551263517038117603.png" alt="$\tilde{A}$"> and <img src="main_eq16177386682490695482.png" alt="$\tilde{b}$">. Thus <img src="main_eq16247206711595679522.png" alt="$x$"> is a solution to the preconditioned problem.</p><p>Now suppose that <img src="main_eq16247206711595679522.png" alt="$x$"> is a solution to the preconditioned problem : <img src="main_eq04673280612819742601.png" alt="$\tilde{A}x = \tilde{b}$">. We multiply both sides by <img src="main_eq11851299345599123836.png" alt="$A_1$"> and expand to get: <img src="main_eq18018796579737887401.png" alt="$A_1 A_1^{-1} A x = A_1 A_1^{-1} b$"> \rightarrow % <img src="main_eq16967141724594739066.png" alt="$Ax = b$"> Thus the solution to the preconditioned problem is also a solution to the original problem.</p><p>b) <img src="main_eq11551263517038117603.png" alt="$\tilde{A}$"> and <img src="main_eq16177386682490695482.png" alt="$\tilde{b}$"> are easy to calculate be cause they are both derived using <img src="main_eq11851299345599123836.png" alt="$A_1$">. <img src="main_eq11851299345599123836.png" alt="$A_1$"> is a symetric tridiagonal matrix making it very easy to find the invers reguardless of size using a variety of algorithms.</p><p>c) Repeat problem 3 using the preconditioned matrix.</p><pre class="codeinput"><span class="comment">% define arrays</span>
+</pre><img vspace="5" hspace="5" src="main_01.png" alt=""> <img vspace="5" hspace="5" src="main_02.png" alt=""> <img vspace="5" hspace="5" src="main_03.png" alt=""> <img vspace="5" hspace="5" src="main_04.png" alt=""> <h2 id="6">Preconditioning the GMRES</h2><p>a) Simple derivation here Let <img src="main_eq16247206711595679522.png" alt="$x$" style="width:4px;height:4px;"> be a solution to <img src="main_eq05667327845782490812.png" alt="$Ax=b$" style="width:23px;height:6px;">. We now left multiple both sides by <img src="main_eq01025619302807502650.png" alt="$A_1^{-1}$" style="width:12px;height:9px;"> to get <img src="main_eq03897863549543872490.png" alt="$A_1^{-1}Ax=A_1^{-1}b$" style="width:48px;height:9px;"> which is equivalent to <img src="main_eq04673280612819742601.png" alt="$\tilde{A}x = \tilde{b}$" style="width:23px;height:7px;"> by definition of <img src="main_eq11551263517038117603.png" alt="$\tilde{A}$" style="width:5px;height:7px;"> and <img src="main_eq16177386682490695482.png" alt="$\tilde{b}$" style="width:3px;height:7px;">. Thus <img src="main_eq16247206711595679522.png" alt="$x$" style="width:4px;height:4px;"> is a solution to the preconditioned problem.</p><p>Now suppose that <img src="main_eq16247206711595679522.png" alt="$x$" style="width:4px;height:4px;"> is a solution to the preconditioned problem : <img src="main_eq04673280612819742601.png" alt="$\tilde{A}x = \tilde{b}$" style="width:23px;height:7px;">. We multiply both sides by <img src="main_eq11851299345599123836.png" alt="$A_1$" style="width:8px;height:7px;"> and expand to get: <img src="main_eq15798273264602086417.png" alt="$A_1 A_1^{-1} A x = A_1 A_1^{-1} b \rightarrow Ax = b$" style="width:148px;height:13px;">. Thus the solution to the preconditioned problem is also a solution to the original problem.</p><p>b) <img src="main_eq11551263517038117603.png" alt="$\tilde{A}$" style="width:5px;height:7px;"> and <img src="main_eq16177386682490695482.png" alt="$\tilde{b}$" style="width:3px;height:7px;"> are easy to calculate be cause they are both derived using <img src="main_eq11851299345599123836.png" alt="$A_1$" style="width:8px;height:7px;">. <img src="main_eq11851299345599123836.png" alt="$A_1$" style="width:8px;height:7px;"> is a symetric tridiagonal matrix making it very easy to find the invers reguardless of size using a variety of algorithms.</p><p>c) Repeat problem 3 using the preconditioned matrix.</p><pre class="codeinput"><span class="comment">% define arrays</span>
 ns = [16,32,64,128]; <span class="comment">% number of basis functions to use</span>
 ls = 2.^(1:7); <span class="comment">% number of iterations</span>
 
@@ -221,15 +226,14 @@ xplot = cell([length(ns),1]);
             <span class="comment">% create the input matrices</span>
             [A,b,M] = CalcAandb(n,V(n));
             <span class="comment">% convert to the pre-conditioned problem.</span>
-            Minv = inv(M);
-            Atilde = Minv*A;
-            btilde = Minv*b;
-            [x,errors(k,j,i),~,~] = mygmres(l,btilde,zeros([n,1]),n,M,Atilde);
+            Atilde = M\A; <span class="comment">% This solves the problem M Atilde = A</span>
+            btilde = M\b;
+            [x,errors(k,j,i)] = mygmres(l,btilde,zeros([n,1]),n,eye(n),Atilde);
             solutions{k,j,i} = [0;x;0];
         <span class="keyword">end</span>  <span class="comment">% k = 1:length(ls)</span>
     <span class="keyword">end</span> <span class="comment">% j = 1:length(ns)</span>
 <span class="keyword">end</span> <span class="comment">% i = 1:length(Vs)</span>
-</pre><p>Produce the plot for <img src="main_eq09748024660719818071.png" alt="$V(x) = 1$"></p><pre class="codeinput">sq=squeeze(errors(:,:,1));
+</pre><p>Produce the plot for <img src="main_eq09748024660719818071.png" alt="$V(x) = 1$" style="width:29px;height:8px;"></p><pre class="codeinput">sq=squeeze(errors(:,:,1));
 
 figure
 [X,Y] = meshgrid(ns,ls);
@@ -242,23 +246,25 @@ xlabel(<span class="string">"n"</span>,<span class="string">"FontSize"</span>,14
 zlabel(<span class="string">"Error"</span>,<span class="string">"FontSize"</span>,14)
 view([143.7,25.8])
 <span class="comment">%zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])</span>
-snapnow;
 
 hold <span class="string">on</span>
 Hplane = surf(X,Y,1e-6*ones(size(X)));
 Hplane.EdgeColor = <span class="string">'none'</span>;
 Hplane.FaceAlpha = 0.5;
+snapnow;
 
 figure()
 <span class="keyword">for</span> i = 1:length(ns)
-    plot(xplot{i},solutions{7,i,1},<span class="string">'.-'</span>)
+    [~,mind] = min(errors(:,i,2));
+    plot(xplot{i},solutions{mind,i,1},<span class="string">'.-'</span>)
     hold <span class="string">on</span>
 <span class="keyword">end</span>
 legend(string(ns))
 hold <span class="string">off</span>
 xlabel(<span class="string">'x'</span>)
 ylabel(<span class="string">'u'</span>)
-</pre><p>Produce the plot for <img src="main_eq17408539410532043687.png" alt="$V(x) = n+1$"></p><pre class="codeinput">sq=squeeze(errors(:,:,2));
+title(<span class="string">'V(x) = 1'</span>)
+</pre><p>Produce the plot for <img src="main_eq17408539410532043687.png" alt="$V(x) = n+1$" style="width:42px;height:8px;"></p><pre class="codeinput">sq=squeeze(errors(:,:,2));
 
 figure
 surf(X,Y,sq)
@@ -270,35 +276,71 @@ xlabel(<span class="string">"n"</span>,<span class="string">"FontSize"</span>,14
 zlabel(<span class="string">"Error"</span>,<span class="string">"FontSize"</span>,14)
 view([143.7,25.8])
 <span class="comment">%zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])</span>
-snapnow;
 
 hold <span class="string">on</span>
 Hplane = surf(X,Y,1e-6*ones(size(X)));
 Hplane.EdgeColor = <span class="string">'none'</span>;
 Hplane.FaceAlpha = 0.5;
+snapnow;
 
 figure()
 <span class="keyword">for</span> i = 1:length(ns)
-    plot(xplot{i},solutions{7,i,2},<span class="string">'.-'</span>)
+    [~,mind] = min(errors(:,i,2));
+    plot(xplot{i},solutions{mind,i,2},<span class="string">'.-'</span>)
     hold <span class="string">on</span>
 <span class="keyword">end</span>
 legend(string(ns))
 hold <span class="string">off</span>
 xlabel(<span class="string">'x'</span>)
 ylabel(<span class="string">'u'</span>)
-</pre><pre class="codeoutput">Warning: Rank deficient, rank = 75, tol =  1.334761e+08. 
-Warning: Rank deficient, rank = 21, tol =  1.313079e+15. 
-Warning: Rank deficient, rank = 20, tol =  1.733537e+58. 
-Warning: Rank deficient, rank = 49, tol =  1.558921e+12. 
-Warning: Rank deficient, rank = 49, tol =  1.040423e+04. 
-Warning: Rank deficient, rank = 48, tol =  2.034744e+22. 
-Warning: Rank deficient, rank = 31, tol =  1.367225e-01. 
-Warning: Rank deficient, rank = 30, tol =  1.747100e+14. 
-Warning: Rank deficient, rank = 29, tol =  1.459321e+44. 
-Warning: Rank deficient, rank = 15, tol =  2.775890e+20. 
-Warning: Rank deficient, rank = 14, tol =  4.335313e+82. 
-Warning: Rank deficient, rank = 17, tol =  3.169915e+39. 
-</pre><img vspace="5" hspace="5" src="main_07.png" alt=""> <img vspace="5" hspace="5" src="main_08.png" alt=""> <img vspace="5" hspace="5" src="main_09.png" alt=""> <img vspace="5" hspace="5" src="main_10.png" alt=""> <img vspace="5" hspace="5" src="main_11.png" alt=""> <img vspace="5" hspace="5" src="main_12.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2023a</a><br></p></div><!--
+title(<span class="string">'V(x) = n+1'</span>)
+
+<span class="comment">% condition numbers</span>
+cond(A)
+cond(Atilde)
+</pre><p>The rate of convergence for the precodnitioned GMRES problem was much faster than the previous one. The first <img src="main_eq08772416954200330719.png" alt="$A$" style="width:8px;height:8px;"> matrix has a condition number of 324 while <img src="main_eq17528810749763258400.png" alt="$tilde{A}$" style="width:30px;height:9px;"> has a conditon number of 220. This means that the preconditioned matrix is farther from being singular, causing it to converge faster.</p><pre class="codeoutput">break
+Warning: Rank deficient, rank = 16, tol =  4.385937e-15. 
+break
+Warning: Rank deficient, rank = 16, tol =  4.385937e-15. 
+break
+Warning: Rank deficient, rank = 16, tol =  4.385937e-15. 
+Warning: Rank deficient, rank = 30, tol =  7.624260e-15. 
+break
+Warning: Rank deficient, rank = 32, tol =  8.548413e-15. 
+break
+Warning: Rank deficient, rank = 32, tol =  8.548413e-15. 
+Warning: Rank deficient, rank = 30, tol =  7.657799e-15. 
+Warning: Rank deficient, rank = 58, tol =  1.508354e-14. 
+break
+Warning: Rank deficient, rank = 64, tol =  1.717203e-14. 
+Warning: Rank deficient, rank = 30, tol =  7.626516e-15. 
+Warning: Rank deficient, rank = 58, tol =  1.502193e-14. 
+Warning: Rank deficient, rank = 113, tol =  2.981274e-14. 
+break
+Warning: Rank deficient, rank = 16, tol =  1.972058e-14. 
+break
+Warning: Rank deficient, rank = 16, tol =  1.972058e-14. 
+break
+Warning: Rank deficient, rank = 16, tol =  1.972058e-14. 
+break
+Warning: Rank deficient, rank = 32, tol =  7.201906e-14. 
+break
+Warning: Rank deficient, rank = 32, tol =  7.201906e-14. 
+Warning: Rank deficient, rank = 63, tol =  2.709137e-13. 
+break
+Warning: Rank deficient, rank = 64, tol =  2.792495e-13. 
+Warning: Rank deficient, rank = 125, tol =  1.066764e-12. 
+</pre><img vspace="5" hspace="5" src="main_05.png" alt=""> <img vspace="5" hspace="5" src="main_06.png" alt=""> <img vspace="5" hspace="5" src="main_07.png" alt=""> <pre class="codeoutput">
+ans =
+
+  323.9814
+
+
+ans =
+
+  220.1582
+
+</pre><img vspace="5" hspace="5" src="main_08.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Linear Algebra Group Assignment
 % Authors: Tyce Olaveson and Levi Moats 
@@ -367,6 +409,7 @@ Warning: Rank deficient, rank = 17, tol =  3.169915e+39.
 % b = [2;3;9]; x = [-2.1; -0.22; 0.11]
 % b = [5;-3;8]; x = [4.8; -2.6; 1.5]
 A = [1 4 7; 2 9 7; 5 8 3];
+
 b = [1;8;2]; x = [-2.18; 1.84; -0.6]; x0 = zeros([3,1]); M = eye(3);
 [xfit,er,V,H] = mygmres(3,b,x0,3,M,A);
 disp(round(xfit,2))
@@ -432,12 +475,12 @@ xlabel("n","FontSize",14)
 zlabel("Error","FontSize",14)
 view([143.7,25.8])
 %zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
-snapnow;
 
 hold on
 Hplane = surf(X,Y,1e-6*ones(size(X)));
 Hplane.EdgeColor = 'none';
 Hplane.FaceAlpha = 0.5;
+snapnow;
 
 figure()
 for i = 1:length(ns)
@@ -462,12 +505,12 @@ xlabel("n","FontSize",14)
 zlabel("Error","FontSize",14)
 view([143.7,25.8])
 %zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
-snapnow;
 
 hold on
 Hplane = surf(X,Y,1e-6*ones(size(X)));
 Hplane.EdgeColor = 'none';
 Hplane.FaceAlpha = 0.5;
+snapnow;
 
 figure()
 for i = 1:length(ns)
@@ -487,7 +530,7 @@ ylabel('u')
 %
 % Now suppose that $x$ is a solution to the preconditioned problem : $\tilde{A}x =
 % \tilde{b}$. We multiply both sides by $A_1$ and expand to get:
-% $A_1 A_1^{-1} A x = A_1 A_1^{-1} b$ \rightarrow % $Ax = b$
+% $A_1 A_1^{-1} A x = A_1 A_1^{-1} b \rightarrow Ax = b$.
 % Thus the solution to the preconditioned problem is also a solution to the
 % original problem.
 %  
@@ -523,10 +566,9 @@ for i = 1:length(Vs)
             % create the input matrices
             [A,b,M] = CalcAandb(n,V(n));
             % convert to the pre-conditioned problem.
-            Minv = inv(M);
-            Atilde = Minv*A;
-            btilde = Minv*b;
-            [x,errors(k,j,i),~,~] = mygmres(l,btilde,zeros([n,1]),n,M,Atilde);
+            Atilde = M\A; % This solves the problem M Atilde = A
+            btilde = M\b;
+            [x,errors(k,j,i)] = mygmres(l,btilde,zeros([n,1]),n,eye(n),Atilde);
             solutions{k,j,i} = [0;x;0];
         end  % k = 1:length(ls)
     end % j = 1:length(ns)
@@ -547,22 +589,24 @@ xlabel("n","FontSize",14)
 zlabel("Error","FontSize",14)
 view([143.7,25.8])
 %zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
-snapnow;
 
 hold on
 Hplane = surf(X,Y,1e-6*ones(size(X)));
 Hplane.EdgeColor = 'none';
 Hplane.FaceAlpha = 0.5;
+snapnow;
 
 figure()
 for i = 1:length(ns)
-    plot(xplot{i},solutions{7,i,1},'.-')
+    [~,mind] = min(errors(:,i,2));
+    plot(xplot{i},solutions{mind,i,1},'.-')
     hold on
 end
 legend(string(ns))
 hold off
 xlabel('x')
 ylabel('u')
+title('V(x) = 1')
 
 %%%
 % Produce the plot for $V(x) = n+1$
@@ -578,21 +622,34 @@ xlabel("n","FontSize",14)
 zlabel("Error","FontSize",14)
 view([143.7,25.8])
 %zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
-snapnow;
 
 hold on
 Hplane = surf(X,Y,1e-6*ones(size(X)));
 Hplane.EdgeColor = 'none';
 Hplane.FaceAlpha = 0.5;
+snapnow;
 
 figure()
 for i = 1:length(ns)
-    plot(xplot{i},solutions{7,i,2},'.-')
+    [~,mind] = min(errors(:,i,2));
+    plot(xplot{i},solutions{mind,i,2},'.-')
     hold on
 end
 legend(string(ns))
 hold off
 xlabel('x')
 ylabel('u')
+title('V(x) = n+1')
+
+% condition numbers
+cond(A)
+cond(Atilde)
+%%%
+% The rate of convergence for the precodnitioned GMRES problem was much
+% faster than the previous one. The first $A$ matrix has a condition
+% number of 324 while $tilde{A}$ has a conditon number of 220. This means
+% that the preconditioned matrix is farther from being singular, causing it
+% to converge faster. 
+
 ##### SOURCE END #####
 --></body></html>
