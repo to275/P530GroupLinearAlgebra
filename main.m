@@ -224,6 +224,7 @@ for i = 1:length(Vs)
             % convert to the pre-conditioned problem.
             Atilde = M\A; % This solves the problem M Atilde = A
             btilde = M\b;
+            disp([cond(A), cond(Atilde)])
             [x,errors(k,j,i)] = mygmres(l,btilde,zeros([n,1]),n,eye(n),Atilde);
             solutions{k,j,i} = [0;x;0];
         end  % k = 1:length(ls)

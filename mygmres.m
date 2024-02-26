@@ -34,6 +34,6 @@ end % j = 1:n
 
 e1 = eye(size(H));
 e1 = e1(:,1);
-y = H\(beta*e1); % <-- this is running into a conditioning error
+y = H\(beta*e1);
 x = x0 + V(:,1:length(y))*y;
 er = norm(A*x-b)/n;
