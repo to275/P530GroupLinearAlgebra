@@ -203,7 +203,7 @@ break
 break
 break
 break
-</pre><img vspace="5" hspace="5" src="main_01.png" alt=""> <img vspace="5" hspace="5" src="main_02.png" alt=""> <img vspace="5" hspace="5" src="main_03.png" alt=""> <img vspace="5" hspace="5" src="main_04.png" alt=""> <h2 id="6">Preconditioning the GMRES</h2><p>a) Simple derivation here Let <img src="main_eq16247206711595679522.png" alt="$x$" style="width:4px;height:4px;"> be a solution to <img src="main_eq05667327845782490812.png" alt="$Ax=b$" style="width:23px;height:6px;">. We now left multiple both sides by <img src="main_eq01025619302807502650.png" alt="$A_1^{-1}$" style="width:12px;height:9px;"> to get <img src="main_eq03897863549543872490.png" alt="$A_1^{-1}Ax=A_1^{-1}b$" style="width:48px;height:9px;"> which is equivalent to <img src="main_eq04673280612819742601.png" alt="$\tilde{A}x = \tilde{b}$" style="width:23px;height:7px;"> by definition of <img src="main_eq11551263517038117603.png" alt="$\tilde{A}$" style="width:5px;height:7px;"> and <img src="main_eq16177386682490695482.png" alt="$\tilde{b}$" style="width:3px;height:7px;">. Thus <img src="main_eq16247206711595679522.png" alt="$x$" style="width:4px;height:4px;"> is a solution to the preconditioned problem.</p><p>Now suppose that <img src="main_eq16247206711595679522.png" alt="$x$" style="width:4px;height:4px;"> is a solution to the preconditioned problem : <img src="main_eq04673280612819742601.png" alt="$\tilde{A}x = \tilde{b}$" style="width:23px;height:7px;">. We multiply both sides by <img src="main_eq11851299345599123836.png" alt="$A_1$" style="width:8px;height:7px;"> and expand to get: <img src="main_eq15798273264602086417.png" alt="$A_1 A_1^{-1} A x = A_1 A_1^{-1} b \rightarrow Ax = b$" style="width:148px;height:13px;">. Thus the solution to the preconditioned problem is also a solution to the original problem.</p><p>b) <img src="main_eq11551263517038117603.png" alt="$\tilde{A}$" style="width:5px;height:7px;"> and <img src="main_eq16177386682490695482.png" alt="$\tilde{b}$" style="width:3px;height:7px;"> are easy to calculate be cause they are both derived using <img src="main_eq11851299345599123836.png" alt="$A_1$" style="width:8px;height:7px;">. <img src="main_eq11851299345599123836.png" alt="$A_1$" style="width:8px;height:7px;"> is a symetric tridiagonal matrix making it very easy to find the invers reguardless of size using a variety of algorithms.</p><p>c) Repeat problem 3 using the preconditioned matrix.</p><pre class="codeinput"><span class="comment">% define arrays</span>
+</pre><img vspace="5" hspace="5" src="main_01.png" alt=""> <img vspace="5" hspace="5" src="main_02.png" alt=""> <img vspace="5" hspace="5" src="main_03.png" alt=""> <img vspace="5" hspace="5" src="main_04.png" alt=""> <img vspace="5" hspace="5" src="main_05.png" alt=""> <h2 id="6">Preconditioning the GMRES</h2><p>a) Simple derivation here Let <img src="main_eq16247206711595679522.png" alt="$x$" style="width:4px;height:4px;"> be a solution to <img src="main_eq05667327845782490812.png" alt="$Ax=b$" style="width:23px;height:6px;">. We now left multiple both sides by <img src="main_eq01025619302807502650.png" alt="$A_1^{-1}$" style="width:12px;height:9px;"> to get <img src="main_eq03897863549543872490.png" alt="$A_1^{-1}Ax=A_1^{-1}b$" style="width:48px;height:9px;"> which is equivalent to <img src="main_eq04673280612819742601.png" alt="$\tilde{A}x = \tilde{b}$" style="width:23px;height:7px;"> by definition of <img src="main_eq11551263517038117603.png" alt="$\tilde{A}$" style="width:5px;height:7px;"> and <img src="main_eq16177386682490695482.png" alt="$\tilde{b}$" style="width:3px;height:7px;">. Thus <img src="main_eq16247206711595679522.png" alt="$x$" style="width:4px;height:4px;"> is a solution to the preconditioned problem.</p><p>Now suppose that <img src="main_eq16247206711595679522.png" alt="$x$" style="width:4px;height:4px;"> is a solution to the preconditioned problem : <img src="main_eq04673280612819742601.png" alt="$\tilde{A}x = \tilde{b}$" style="width:23px;height:7px;">. We multiply both sides by <img src="main_eq11851299345599123836.png" alt="$A_1$" style="width:8px;height:7px;"> and expand to get: <img src="main_eq15798273264602086417.png" alt="$A_1 A_1^{-1} A x = A_1 A_1^{-1} b \rightarrow Ax = b$" style="width:148px;height:13px;">. Thus the solution to the preconditioned problem is also a solution to the original problem.</p><p>b) <img src="main_eq11551263517038117603.png" alt="$\tilde{A}$" style="width:5px;height:7px;"> and <img src="main_eq16177386682490695482.png" alt="$\tilde{b}$" style="width:3px;height:7px;"> are easy to calculate be cause they are both derived using <img src="main_eq11851299345599123836.png" alt="$A_1$" style="width:8px;height:7px;">. <img src="main_eq11851299345599123836.png" alt="$A_1$" style="width:8px;height:7px;"> is a symetric tridiagonal matrix making it very easy to find the invers reguardless of size using a variety of algorithms.</p><p>c) Repeat problem 3 using the preconditioned matrix.</p><pre class="codeinput"><span class="comment">% define arrays</span>
 ns = [16,32,64,128]; <span class="comment">% number of basis functions to use</span>
 ls = 2.^(1:7); <span class="comment">% number of iterations</span>
 
@@ -295,7 +295,7 @@ xlabel(<span class="string">'x'</span>)
 ylabel(<span class="string">'u'</span>)
 title(<span class="string">'V(x) = n+1'</span>)
 
-<span class="comment">% condition numbers</span>
+<span class="comment">% c) condition numbers</span>
 cond(A)
 cond(Atilde)
 </pre><p>The rate of convergence for the precodnitioned GMRES problem was much faster than the previous one. The first <img src="main_eq08772416954200330719.png" alt="$A$" style="width:8px;height:8px;"> matrix has a condition number of 324 while <img src="main_eq17528810749763258400.png" alt="$tilde{A}$" style="width:30px;height:9px;"> has a conditon number of 220. This means that the preconditioned matrix is farther from being singular, causing it to converge faster.</p><pre class="codeoutput">break
@@ -330,7 +330,7 @@ Warning: Rank deficient, rank = 63, tol =  2.709137e-13.
 break
 Warning: Rank deficient, rank = 64, tol =  2.792495e-13. 
 Warning: Rank deficient, rank = 125, tol =  1.066764e-12. 
-</pre><img vspace="5" hspace="5" src="main_05.png" alt=""> <img vspace="5" hspace="5" src="main_06.png" alt=""> <img vspace="5" hspace="5" src="main_07.png" alt=""> <pre class="codeoutput">
+</pre><img vspace="5" hspace="5" src="main_06.png" alt=""> <img vspace="5" hspace="5" src="main_07.png" alt=""> <img vspace="5" hspace="5" src="main_08.png" alt=""> <pre class="codeoutput">
 ans =
 
   323.9814
@@ -340,7 +340,7 @@ ans =
 
   220.1582
 
-</pre><img vspace="5" hspace="5" src="main_08.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022b</a><br></p></div><!--
+</pre><img vspace="5" hspace="5" src="main_09.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% Linear Algebra Group Assignment
 % Authors: Tyce Olaveson and Levi Moats 
@@ -641,7 +641,7 @@ xlabel('x')
 ylabel('u')
 title('V(x) = n+1')
 
-% condition numbers
+% c) condition numbers
 cond(A)
 cond(Atilde)
 %%%
