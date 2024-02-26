@@ -144,7 +144,8 @@ for i = 1:length(ns)
 end
 legend(string(ns))
 hold off
-
+xlabel('x')
+ylabel('u')
 %%%
 % Produce the plot for $V(x) = n+1$
 sq=squeeze(errors(:,:,2));
@@ -173,17 +174,18 @@ for i = 1:length(ns)
 end
 legend(string(ns))
 hold off
+xlabel('x')
+ylabel('u')
 %% Preconditioning the GMRES
 % a) Simple derivation here
 % Let $x$ be a solution to $Ax=b$. We now left multiple both sides by
 % $A_1^{-1}$ to get $A_1^{-1}Ax=A_1^{-1}b$ which is equivalent to
 % $\tilde{A}x = \tilde{b}$ by definition of $\tilde{A}$ and $\tilde{b}$.
-% Thus $x$ is a solution to the preconditioned problem
+% Thus $x$ is a solution to the preconditioned problem.
+%
 % Now suppose that $x$ is a solution to the preconditioned problem : $\tilde{A}x =
-% \tilde{b}$.
-% Now we multiply both sides by $A_1$ and expand to get:
-% $A_1 A_1^{-1} A x = A_1 A_1^{-1} b$
-% $ Ax = b$
+% \tilde{b}$. We multiply both sides by $A_1$ and expand to get:
+% $A_1 A_1^{-1} A x = A_1 A_1^{-1} b \rightarrow Ax = b$.
 % Thus the solution to the preconditioned problem is also a solution to the
 % original problem.
 %  
@@ -195,3 +197,101 @@ hold off
 %
 % c) Repeat problem 3 using the preconditioned matrix. 
 %
+
+% define arrays
+ns = [16,32,64,128]; % number of basis functions to use
+ls = 2.^(1:7); % number of iterations
+
+Vs = {@(n) 1, @(n) n+1}; % set of different (constant) functions for
+
+errors = zeros([length(ls),length(ns),length(Vs)]); % empty matrix to store the errors
+solutions = cell(size(errors)); % empty cell array to store the solutions after they have been calculated
+xplot = cell([length(ns),1]);
+for i = 1:length(ns)
+    xplot{i} = 0:1/(ns(i)+1):1;
+end
+
+% loop through each case
+for i = 1:length(Vs)
+    V = Vs{i};
+    for j = 1:length(ns)
+        n = ns(j);
+        for k = 1:length(ls)
+            l = ls(k);
+            % create the input matrices
+            [A,b,M] = CalcAandb(n,V(n));
+            % convert to the pre-conditioned problem.
+            Atilde = M\A; % This solves the problem M Atilde = A
+            btilde = M\b;
+            [x,errors(k,j,i)] = mygmres(l,btilde,zeros([n,1]),n,M,Atilde);
+            solutions{k,j,i} = [0;x;0];
+        end  % k = 1:length(ls)
+    end % j = 1:length(ns)
+end % i = 1:length(Vs)
+
+%%%
+% Produce the plot for $V(x) = 1$
+sq=squeeze(errors(:,:,1));
+
+figure
+[X,Y] = meshgrid(ns,ls);
+surf(X,Y,sq)
+ax=gca;
+ax.ZScale = 'log';
+title("V(x) = 1","FontSize",16)
+ylabel("l","FontSize",14)
+xlabel("n","FontSize",14)
+zlabel("Error","FontSize",14)
+view([143.7,25.8])
+%zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
+snapnow;
+
+hold on
+Hplane = surf(X,Y,1e-6*ones(size(X)));
+Hplane.EdgeColor = 'none';
+Hplane.FaceAlpha = 0.5;
+
+figure()
+for i = 1:length(ns)
+    [~,mind] = min(errors(:,i,2));
+    plot(xplot{i},solutions{mind,i,1},'.-')
+    hold on
+end
+legend(string(ns))
+hold off
+xlabel('x')
+ylabel('u')
+title('V(x) = 1')
+
+%%%
+% Produce the plot for $V(x) = n+1$
+sq=squeeze(errors(:,:,2));
+
+figure
+surf(X,Y,sq)
+ax=gca;
+ax.ZScale = 'log';
+title("V(x) = n+1","FontSize",16)
+ylabel("l","FontSize",14)
+xlabel("n","FontSize",14)
+zlabel("Error","FontSize",14)
+view([143.7,25.8])
+%zlim([1e-6 max(sq,[],"all")+max(sq,[],"all")*0.05])
+snapnow;
+
+hold on
+Hplane = surf(X,Y,1e-6*ones(size(X)));
+Hplane.EdgeColor = 'none';
+Hplane.FaceAlpha = 0.5;
+
+figure()
+for i = 1:length(ns)
+    [~,mind] = min(errors(:,i,2));
+    plot(xplot{i},solutions{mind,i,2},'.-')
+    hold on
+end
+legend(string(ns))
+hold off
+xlabel('x')
+ylabel('u')
+title('V(x) = n+1')

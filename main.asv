@@ -140,7 +140,10 @@ Hplane.FaceAlpha = 0.5;
 figure()
 for i = 1:length(ns)
     plot(xplot{i},solutions{7,i,1},'.-')
+    hold on
 end
+legend(string(ns))
+hold off
 
 %%%
 % Produce the plot for $V(x) = n+1$
@@ -162,6 +165,14 @@ hold on
 Hplane = surf(X,Y,1e-6*ones(size(X)));
 Hplane.EdgeColor = 'none';
 Hplane.FaceAlpha = 0.5;
+
+figure()
+for i = 1:length(ns)
+    plot(xplot{i},solutions{7,i,2},'.-')
+    hold on
+end
+legend(string(ns))
+hold off
 %% Preconditioning the GMRES
 % a) Simple derivation here
 % Let $x$ be a solution to $Ax=b$. We now left multiple both sides by
@@ -184,3 +195,31 @@ Hplane.FaceAlpha = 0.5;
 %
 % c) Repeat problem 3 using the preconditioned matrix. 
 %
+
+% define arrays
+ns = [16,32,64,128]; % number of basis functions to use
+ls = 2.^(1:7); % number of iterations
+
+Vs = {@(n) 1, @(n) n+1}; % set of different (constant) functions for
+
+errors = zeros([length(ls),length(ns),length(Vs)]); % empty matrix to store the errors
+solutions = cell(size(errors)); % empty cell array to store the solutions after they have been calculated
+xplot = cell([length(ns),1]);
+for i = 1:length(ns)
+    xplot{i} = 0:1/(ns(i)+1):1;
+end
+
+% loop through each case
+for i = 1:length(Vs)
+    V = Vs{i};
+    for j = 1:length(ns)
+        n = ns(j);
+        for k = 1:length(ls)
+            l = ls(k);
+            % create the input matrices
+            [A,b] = CalcAandb(n,V(n));
+            [x,errors(k,j,i),~,~] = mygmres(l,b,zeros([n,1]),n,eye(n),A);
+            solutions{k,j,i} = [0;x;0];
+        end  % k = 1:length(ls)
+    end % j = 1:length(ns)
+end % i = 1:length(Vs)
