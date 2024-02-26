@@ -140,10 +140,7 @@ Hplane.FaceAlpha = 0.5;
 figure()
 for i = 1:length(ns)
     plot(xplot{i},solutions{7,i,1},'.-')
-    hold on
 end
-legend(string(ns))
-hold off
 
 %%%
 % Produce the plot for $V(x) = n+1$
@@ -165,14 +162,6 @@ hold on
 Hplane = surf(X,Y,1e-6*ones(size(X)));
 Hplane.EdgeColor = 'none';
 Hplane.FaceAlpha = 0.5;
-
-figure()
-for i = 1:length(ns)
-    plot(xplot{i},solutions{7,i,2},'.-')
-    hold on
-end
-legend(string(ns))
-hold off
 %% Preconditioning the GMRES
 % a) Simple derivation here
 % Let $x$ be a solution to $Ax=b$. We now left multiple both sides by
