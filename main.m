@@ -46,13 +46,13 @@
 %
 % From above
 %
-% It can be shown that $A_1$ is a symetric tridiagonal matrix with
+% By evaluating the above integrals, it can be easily shown that $A_1$ is a symetric tridiagonal matrix with
 % $\frac{2}{\Delta x}$ on the diagonal and $\frac{-1}{\Delta x}$ on the off
 % diagonals. $A_2$ is a skew-symmetric tridiagonal matrix with 0 on the
 % diagonal, $\frac{\gamma}{2}$ on the upper off diagonal, and 
 % $\frac{-\gamma}{2}$ on the lower off diagonal.
 %
-% It can be shown that $F_i$ is a vector is an n by 1 vector where all the
+% Similarly, it can be readily calculated that $F$ is an $n \times 1$ vector where all the
 % values are $\Delta x$.
 %
 % c) A function CalcAandb.m has been written and is included in this
@@ -224,7 +224,7 @@ for i = 1:length(Vs)
             % convert to the pre-conditioned problem.
             Atilde = M\A; % This solves the problem M Atilde = A
             btilde = M\b;
-            disp([cond(A), cond(Atilde)])
+            % disp([cond(A), cond(Atilde)])
             [x,errors(k,j,i)] = mygmres(l,btilde,zeros([n,1]),n,eye(n),Atilde);
             solutions{k,j,i} = [0;x;0];
         end  % k = 1:length(ls)
@@ -303,7 +303,9 @@ cond(A)
 cond(Atilde)
 %%%
 % The rate of convergence for the precodnitioned GMRES problem was much
-% faster than the previous one. The first $A$ matrix has a condition
-% number of 324 while $\tilde{A}$ has a conditon number of 220. This means
-% that the preconditioned matrix is farther from being singular, causing it
-% to converge faster. 
+% faster than the previous one. For the final case, the first $A$ matrix has a condition
+% number of 324 while $\tilde{A}$ has a conditon number of 220. This same
+% trend is similar for all the other $A$ and $\tilde{A}$ pairs. This
+% indicates that the preconditioning makes the problem more stable and
+% moves the solution into a basis that is naturally compatible with the
+% nature of the problem itself.
