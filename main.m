@@ -304,6 +304,6 @@ cond(Atilde)
 %%%
 % The rate of convergence for the precodnitioned GMRES problem was much
 % faster than the previous one. The first $A$ matrix has a condition
-% number of 324 while $tilde{A}$ has a conditon number of 220. This means
+% number of 324 while $\tilde{A}$ has a conditon number of 220. This means
 % that the preconditioned matrix is farther from being singular, causing it
 % to converge faster. 
